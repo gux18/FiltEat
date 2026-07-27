@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>원재료 기피물질 AI 감지기</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 p-4 sm:p-6">
+  <div class="max-w-2xl mx-auto space-y-6">
+    
+    <!-- 헤더 -->
+    <header class="text-center py-4">
+      <h1 class="text-2xl font-bold text-indigo-600">🔍 원재료 기피물질 스캐너</h1>
+      <p class="text-slate-500 text-sm mt-1">성분표 사진을 올리면 AI가 위험 성분을 찾아드립니다.</p>
+    </header>
+
+    <!-- 1. 기피물질 설정 영역 -->
+    <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+      <h2 class="text-lg font-semibold mb-3 text-slate-700">1. 나의 기피물질 목록</h2>
+      <div class="flex gap-2 mb-3">
+        <input type="text" id="avoidInput" placeholder="예: 우유, 대두, 땅콩, 글루텐" 
+               class="flex-1 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+        <button onclick="addAvoidItem()" 
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
+          추가
+        </button>
+      </div>
+      <div id="avoidTags" class="flex flex-wrap gap-2 min-h-[32px]">
+        <!-- 태그들이 여기에 생성됨 -->
+      </div>
+    </section>
+
+    <!-- 2. 사진 업로드 영역 -->
+    <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+      <h2 class="text-lg font-semibold mb-3 text-slate-700">2. 성분표 사진 업로드</h2>
+      <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageSelect(event)">
+      
+      <label for="imageInput" 
+             class="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-400 transition bg-slate-50">
+        <svg class="w-10 h-10 text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+        <span class="text-sm text-slate-600 font-medium">사진을 드래그하거나 클릭하여 선택하세요</span>
+      </label>
+
+      <!-- 이미지 미리보기 -->
+      <div id="previewContainer" class="hidden mt-4 text-center">
+        <img id="imagePreview" class="max-h-64 mx-auto rounded-lg border">
+        <button id="analyzeBtn" onclick="analyzeImage()" 
+                class="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold shadow-md transition flex items-center justify-center gap-2">
+          <span>AI로 기피물질 검사하기</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. 결과 출력 영역 -->
+    <section id="resultSection" class="hidden bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+      <h2 class="text-lg font-semibold text-slate-700">3. 분석 결과</h2>
+      
+      <!-- 기피물질 감지 경고 -->
+      <div id="alertBox" class="p-4 rounded-xl border"></div>
+
+      <!-- 추출된 전체 텍스트 -->
+      <div>
+        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">추출된 전체 원재료</h3>
+        <p id="extractedText" class="text-sm bg-slate-50 p-3 rounded-lg text-slate-600 leading-relaxed font-mono whitespace-pre-wrap"></p>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    let avoidList = JSON.parse(localStorage.getItem('avoidList') || '["우유", "대두", "밀"]');
+    let selectedBase64 = null;
+    let selectedMimeType = null;
+
+    // 초기화
+    renderTags();
+
+    function renderTags() {
+      const container = document.getElementById('avoidTags');
+      container.innerHTML = avoidList.map((item, index) => `
+        <span class="inline-flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-200 text-xs px-3 py-1.5 rounded-full font-medium">
+          ${item}
+          <button onclick="removeAvoidItem(${index})" class="hover:text-rose-800 font-bold ml-1">×</button>
+        </span>
+      `).join('');
+      localStorage.setItem('avoidList', JSON.stringify(avoidList));
+    }
+
+    function addAvoidItem() {
+      const input = document.getElementById('avoidInput');
+      const val = input.value.trim();
+      if (val && !avoidList.includes(val)) {
+        avoidList.push(val);
+        input.value = '';
+        renderTags();
+      }
+    }
+
+    function removeAvoidItem(index) {
+      avoidList.splice(index, 1);
+      renderTags();
+    }
+
+    function handleImageSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      selectedMimeType = file.type;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const fullBase64 = e.target.result;
+        selectedBase64 = fullBase64.split(',')[1]; // Pure Base64만 추출
+        
+        document.getElementById('imagePreview').src = fullBase64;
+        document.getElementById('previewContainer').classList.remove('hidden');
+        document.getElementById('resultSection').classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function analyzeImage() {
+      if (!selectedBase64) return;
+      if (avoidList.length === 0) {
+        alert('최소 하나 이상의 기피물질을 등록해주세요.');
+        return;
+      }
+
+      const btn = document.getElementById('analyzeBtn');
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>분석 중...</span>
+      `;
+
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageBase64: selectedBase64,
+            mimeType: selectedMimeType,
+            avoidList: avoidList
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '분석에 실패했습니다.');
+
+        displayResults(data);
+      } catch (err) {
+        alert('오류: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>AI로 기피물질 검사하기</span>`;
+      }
+    }
+
+    function displayResults(data) {
+      const resultSection = document.getElementById('resultSection');
+      const alertBox = document.getElementById('alertBox');
+      const extractedText = document.getElementById('extractedText');
+
+      resultSection.classList.remove('hidden');
+      extractedText.innerText = data.extractedText || '텍스트를 추출하지 못했습니다.';
+
+      if (data.detectedAvoids && data.detectedAvoids.length > 0) {
+        alertBox.className = "p-4 rounded-xl border bg-rose-50 border-rose-200 text-rose-800 space-y-2";
+        alertBox.innerHTML = `
+          <div class="font-bold flex items-center gap-2">
+            <span>⚠️ WARNING: 기피물질 ${data.detectedAvoids.length}건이 발견되었습니다!</span>
+          </div>
+          <ul class="list-disc list-inside text-sm space-y-1">
+            ${data.detectedAvoids.map(item => `
+              <li><strong>${item.ingredient}</strong> (사유: ${item.matchedAvoid} 매칭 ${item.reason ? `- ${item.reason}` : ''})</li>
+            `).join('')}
+          </ul>
+        `;
+      } else {
+        alertBox.className = "p-4 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-800";
+        alertBox.innerHTML = `
+          <div class="font-bold flex items-center gap-2">
+            <span>✅ SAFE: 등록하신 기피물질이 발견되지 않았습니다.</span>
+          </div>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>
