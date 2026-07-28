@@ -71,6 +71,7 @@ async function analyzeImage() {
   `;
 
   try {
+    console.log('3. fetch 요청 시작');
     //15초 타임아웃 설정
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
