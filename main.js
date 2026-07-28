@@ -37,10 +37,10 @@ function handleImageSelect(event) {
 
   selectedMimeType = file.type;
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = function (e) {
     const fullBase64 = e.target.result;
     selectedBase64 = fullBase64.split(',')[1]; // Pure Base64만 추출
-    
+
     document.getElementById('imagePreview').src = fullBase64;
     document.getElementById('previewContainer').classList.remove('hidden');
     document.getElementById('resultSection').classList.add('hidden');
@@ -112,20 +112,30 @@ function displayResults(data) {
   const warningList = data.warningList || (data.detectedAvoids ? data.detectedAvoids.filter(item => !item.reason || !item.reason.includes('유의')) : []);
   const cautionList = data.cautionList || (data.detectedAvoids ? data.detectedAvoids.filter(item => item.reason && item.reason.includes('유의')) : []);
 
-  if (warningList.length > 0) {
-    alertBox.className = "p-4 rounded-xl border bg-rose-50 border-rose-200 text-rose-800 space-y-2";
-    alertBox.innerHTML = `
-      <div class="font-bold flex items-center gap-2">
-        <span>⚠️ WARNING: 기피물질 ${data.detectedAvoids.length}건이 발견되었습니다!</span>
-      </div>
-      <ul class="list-disc list-inside text-sm space-y-1">
-        ${data.detectedAvoids.map(item => `
-          <li><strong>${item.ingredient}</strong> (연관 성분: ${item.matchedAvoid} - 사유: ${item.reason ? `${item.reason}` : ''})</li>
-        `).join('')}
-      </ul>
-    `;
-  }
-  if (cautionList.length > 0) {
+  /* 검출된 항목(주의/유의)이 있을 때와 없을 때를 구별 */
+  if (warningList.length > 0 || cautionList.length > 0) {
+    /* alertBox 기본 테두리/여백 스타일 정리 및 htmlContent 변수 선언  */
+    alertBox.className = "space-y-3";
+    let htmlContent = '';
+
+    /*주의(Warning) 항목 출력 부분 */
+    if (warningList.length > 0) {
+      htmlContent += `
+        <div class="p-4 rounded-xl border bg-rose-50 border-rose-200 text-rose-800 space-y-2">
+          <div class="font-bold flex items-center gap-2">
+            <span>⚠️ WARNING: 주의 기피물질 ${warningList.length}건이 발견되었습니다!</span>
+          </div>
+          <ul class="list-disc list-inside text-sm space-y-1">
+            ${/*data.detectedAvoids 전체가 아닌 warningList만 순회*/
+        warningList.map(item => `
+              <li><strong>${item.ingredient}</strong> (연관 성분: ${item.matchedAvoid}${item.reason ? ` - 사유: ${item.reason}` : ''})</li>
+            `).join('')}
+          </ul>
+        </div>
+      `;
+    }
+
+    if (cautionList.length > 0) {
       htmlContent += `
         <div class="p-4 rounded-xl border bg-amber-50 border-amber-200 text-amber-800 space-y-2">
           <div class="font-bold flex items-center gap-2">
@@ -133,13 +143,18 @@ function displayResults(data) {
           </div>
           <ul class="list-disc list-inside text-sm space-y-1">
             ${cautionList.map(item => `
-              <li><strong>${item.ingredient}</strong> (연관 성분: ${item.matchedAvoid}${item.reason ? ` - ${item.reason}` : ''})</li>
+              <li><strong>${item.ingredient}</strong> (연관 성분: ${item.matchedAvoid}${item.reason ? ` - 사유: ${item.reason}` : ''})</li>
             `).join('')}
           </ul>
         </div>
       `;
     }
-  if (0) {
+
+    /*완성된 HTML을 alertBox 내부 요소에 할당 */
+    alertBox.innerHTML = htmlContent;
+
+  } else {
+
     alertBox.className = "p-4 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-800";
     alertBox.innerHTML = `
       <div class="font-bold flex items-center gap-2">
