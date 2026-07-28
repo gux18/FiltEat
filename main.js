@@ -86,6 +86,8 @@ async function analyzeImage() {
       })
     });
 
+    console.log("4. fetch 응답 도착:", response);
+
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || '분석에 실패했습니다.');
 
