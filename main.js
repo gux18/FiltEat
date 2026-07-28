@@ -49,11 +49,16 @@ function handleImageSelect(event) {
 }
 
 async function analyzeImage() {
+  console.log('1. 분석 버튼 클릭됨');
+  console.log('현재 base64 데이터 상태:', selectedBase64 ? '존재함' : '없음(null)');
+
   if (!selectedBase64) return;
   if (avoidList.length === 0) {
     alert('최소 하나 이상의 기피물질을 등록해주세요.');
     return;
   }
+
+  console.log('2. fetch 요청 직전');
 
   const btn = document.getElementById('analyzeBtn');
   btn.disabled = true;
