@@ -66,9 +66,14 @@ async function analyzeImage() {
   `;
 
   try {
+    //15초 타임아웃 설정
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     const response = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal, // 타임아웃 신호 연결
       body: JSON.stringify({
         imageBase64: selectedBase64,
         mimeType: selectedMimeType,
