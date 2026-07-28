@@ -117,7 +117,7 @@ function displayResults(data) {
       </div>
       <ul class="list-disc list-inside text-sm space-y-1">
         ${data.detectedAvoids.map(item => `
-          <li><strong>${item.ingredient}</strong> (사유: /*${item.matchedAvoid} 매칭*/ ${item.reason ? `- ${item.reason}` : ''})</li>
+          <li><strong>${item.ingredient}</strong> (연관 성분: ${item.matchedAvoid} - 사유: ${item.reason ? `- ${item.reason}` : ''})</li>
         `).join('')}
       </ul>
     `;
