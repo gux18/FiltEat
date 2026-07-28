@@ -17,9 +17,14 @@ export default async function handler(req, res) {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     // 프롬프트 구성
-    const prompt = `
-    다음 이미지에서 원재료 및 성분표 텍스트를 추출(OCR)하세요.
-    그리고 추출된 텍스트 중 사용자의 [기피물질 목록]에 해당하거나 이를 포함하는 성분을 찾아내세요.
+    const prompt = `다음 이미지에서 원재료 및 성분표 텍스트를 추출(OCR)하고, 사용자의 [기피물질 목록]과 대조하여 분석하세요.
+    
+    [기피물질 목록]:
+    ${avoidList.join(', ')}
+
+    [작성 규칙]:
+    1. 기피 성분이 이미지에서 너무 명백하게 확인되는 경우(예: 기피 항목 '밀' -> '밀', '밀가루' 검출)에는 reason(사유)을 빈 문자열("")로 남겨두세요.
+    2. 실제로 함유되었는지 불분명하거나 "같은 시설에서 제조" 등의 교차 오염 문구가 포함된 경우, reason(사유) 필드에 '주의'라는 단어 대신 반드시 '유의'라는 단어를 사용하여 이유를 설명해 주세요. (예: "밀을 사용한 시설에서 제조되어 유의 필요")
     
     [기피물질 목록]:
     ${avoidList.join(', ')}
@@ -36,7 +41,7 @@ export default async function handler(req, res) {
     };
 
     // Gemini API 호출 (Structured JSON Output 사용)
-    const response = await ai.models.generateContent({
+  const response = await ai.models.generateContent({
       model: 'gemini-3.1-flash-lite',
       contents: [prompt, imagePart],
       config: {
@@ -55,11 +60,11 @@ export default async function handler(req, res) {
                 properties: {
                   ingredient: { type: Type.STRING, description: '이미지에서 발견된 성분명' },
                   matchedAvoid: { type: Type.STRING, description: '매칭된 기피물질 항목' },
-                  reason: { type: Type.STRING, description: '검출 이유 또는 설명' }
+                  reason: { type: Type.STRING, description: '검출 이유 또는 설명 (명백한 경우 빈값 "")' }
                 },
                 required: ['ingredient', 'matchedAvoid']
               },
-              description: '발견된 기피물질 목록'
+              description: '발견된 전체 기피물질 목록'
             }
           },
           required: ['extractedText', 'detectedAvoids']

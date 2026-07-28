@@ -109,7 +109,10 @@ function displayResults(data) {
   resultSection.classList.remove('hidden');
   extractedText.innerText = data.extractedText || '텍스트를 추출하지 못했습니다.';
 
-  if (data.detectedAvoids && data.detectedAvoids.length > 0) {
+  const warningList = data.warningList || (data.detectedAvoids ? data.detectedAvoids.filter(item => !item.reason || !item.reason.includes('유의')) : []);
+  const cautionList = data.cautionList || (data.detectedAvoids ? data.detectedAvoids.filter(item => item.reason && item.reason.includes('유의')) : []);
+
+  if (warningList.length > 0) {
     alertBox.className = "p-4 rounded-xl border bg-rose-50 border-rose-200 text-rose-800 space-y-2";
     alertBox.innerHTML = `
       <div class="font-bold flex items-center gap-2">
@@ -117,11 +120,26 @@ function displayResults(data) {
       </div>
       <ul class="list-disc list-inside text-sm space-y-1">
         ${data.detectedAvoids.map(item => `
-          <li><strong>${item.ingredient}</strong> (연관 성분: ${item.matchedAvoid} - 사유: ${item.reason ? `- ${item.reason}` : ''})</li>
+          <li><strong>${item.ingredient}</strong> (연관 성분: ${item.matchedAvoid} - 사유: ${item.reason ? `${item.reason}` : ''})</li>
         `).join('')}
       </ul>
     `;
-  } else {
+  }
+  if (cautionList.length > 0) {
+      htmlContent += `
+        <div class="p-4 rounded-xl border bg-amber-50 border-amber-200 text-amber-800 space-y-2">
+          <div class="font-bold flex items-center gap-2">
+            <span>⚡ CAUTION: 유의 항목 ${cautionList.length}건이 발견되었습니다.</span>
+          </div>
+          <ul class="list-disc list-inside text-sm space-y-1">
+            ${cautionList.map(item => `
+              <li><strong>${item.ingredient}</strong> (연관 성분: ${item.matchedAvoid}${item.reason ? ` - ${item.reason}` : ''})</li>
+            `).join('')}
+          </ul>
+        </div>
+      `;
+    }
+  if (0) {
     alertBox.className = "p-4 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-800";
     alertBox.innerHTML = `
       <div class="font-bold flex items-center gap-2">
