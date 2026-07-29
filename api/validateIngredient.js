@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     const response = await ai.models.generateContent({
       model: "gemini-3.1-flash-lite",
       contents: `
-사용자가 입력한 단어가 음식, 식재료, 식품첨가물인지 판단하세요.
+사용자가 입력한 단어가 음식, 식재료, 식품첨가물, 한국어인지 판단하세요.
 맞으면 YES,
 아니면 NO만 출력하세요.
 입력:
