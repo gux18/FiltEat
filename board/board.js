@@ -88,7 +88,7 @@
           }
 
           memoDiv.innerHTML = `
-            <div>${data.content || ''}</div>
+            <div>${escapeHtml(data.content || '')}</div>
             <div class="memo-date">${dateStr}</div>
           `;
           memoList.appendChild(memoDiv);
