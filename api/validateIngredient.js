@@ -1,33 +1,23 @@
-import express from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-const router = express.Router();
-
-const genAI = new GoogleGenerativeAI(
-  process.env.GEMINI_API_KEY
-);
-
-router.post("/", async (req, res) => {
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({
+      error: "Method Not Allowed"
+    });
+  }
   try {
     const { text } = req.body;
-
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash"
     });
 
     const prompt = `
-너는 식품 성분 검사기다.
-사용자가 입력한 단어가 아래 중 하나인지 판단해라.
-
-- 음식
-- 식재료
-- 식품첨가물
-- 향신료
-- 알레르기 성분
-
-맞으면 YES,
-아니면 NO만 출력해라.
-
+입력된 단어가 음식, 식재료, 식품첨가물인지 판단하세요.
+맞으면 YES
+아니면 NO
+YES 또는 NO만 출력하세요.
 입력:
 ${text}
 `;
@@ -37,13 +27,13 @@ ${text}
       .trim()
       .toUpperCase();
 
-    res.json({valid: answer === "YES"});
-    
+    res.status(200).json({
+      valid: answer === "YES"
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       valid: false
     });
   }
-});
-export default router;
+}
