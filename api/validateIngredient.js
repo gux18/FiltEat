@@ -32,10 +32,10 @@ ${text}
     });*/
     const result = await model.generateContent(prompt);
     console.log(result);
-    const text = result.response.text();
-    console.log(text);
+    const t = result.response.text();
+    console.log(t);
     res.status(200).json({
-      valid: text.includes("YES")
+      valid: t.includes("YES")
     });
   } catch (error) {
     console.error(error);
