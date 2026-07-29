@@ -144,10 +144,36 @@ function displayResults(data) {
   const extractedText = document.getElementById('extractedText');
 
   resultSection.classList.remove('hidden');
-  extractedText.innerText = data.extractedText || '텍스트를 추출하지 못했습니다.';
 
   const warningList = data.warningList || (data.detectedAvoids ? data.detectedAvoids.filter(item => !item.reason || !item.reason.includes('유의')) : []);
   const cautionList = data.cautionList || (data.detectedAvoids ? data.detectedAvoids.filter(item => item.reason && item.reason.includes('유의')) : []);
+
+  let rawText = data.extractedText || '텍스트를 추출하지 못했습니다.';
+
+  if (data.extractedText) {
+    // 특수문자 정규식 이스케이프 함수
+    const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // 경고(Warning) 항목 -> 빨간색 하이라이트
+    warningList.forEach(item => {
+      if (item.ingredient) {
+        const regex = new RegExp(escapeRegExp(item.ingredient), 'g');
+        rawText = rawText.replace(regex, `<mark class="bg-rose-100 text-rose-700 font-semibold px-1 rounded">${item.ingredient}</mark>`);
+      }
+    });
+
+    // 유의(Caution) 항목 -> 노란/주황색 하이라이트
+    cautionList.forEach(item => {
+      if (item.ingredient) {
+        const regex = new RegExp(escapeRegExp(item.ingredient), 'g');
+        rawText = rawText.replace(regex, `<mark class="bg-amber-100 text-amber-800 font-semibold px-1 rounded">${item.ingredient}</mark>`);
+      }
+    });
+
+    extractedText.innerHTML = rawText;
+  } else {
+    extractedText.innerText = rawText;
+  }
 
   /* 검출된 항목(주의/유의)이 있을 때와 없을 때를 구별 */
   if (warningList.length > 0 || cautionList.length > 0) {
