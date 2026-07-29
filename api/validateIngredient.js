@@ -3,9 +3,7 @@ const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY);
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({
-      error: "Method Not Allowed"
-    });
+    return res.status(405).json({error: "Method Not Allowed"});
   }
   try {
     const { text } = req.body;
