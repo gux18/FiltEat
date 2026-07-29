@@ -5,6 +5,52 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>건강 상태에 따라 피해야 할 성분</title>
         <link rel="stylesheet" href="../style.css">
+        <style>
+            .input-row {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+            .input-row input {
+                flex: 1;
+                min-width: 220px;
+            }
+            .tag-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                min-height: 32px;
+            }
+            .tag-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: #eef2ff;
+                color: #4338ca;
+                border: 1px solid #c7d2fe;
+                border-radius: 999px;
+                padding: 7px 10px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            .tag-link {
+                color: inherit;
+                text-decoration: none;
+            }
+            .tag-link:hover {
+                text-decoration: underline;
+            }
+            .tag-remove {
+                border: 0;
+                background: transparent;
+                color: inherit;
+                padding: 0;
+                font-size: 16px;
+                line-height: 1;
+                cursor: pointer;
+            }
+        </style>
     </head>
     <body class="bg-slate-50 min-h-screen text-slate-800 p-4">
         <div class="wrap">
@@ -17,25 +63,17 @@
             <!-- (1) 사용자 건강 상태 입력 및 수정 폼 -->
             <div class="card mt-4">
                 <h2>내 건강 상태 입력</h2>
-                <form id="health-form" class="form-group">
+                <form id="health-form" class="form-group" onsubmit="event.preventDefault(); addHealthItem();">
                     <div class="input-field">
-                        <label for="user-condition">현재 질환 또는 건강 상태</label>
-                        <input type="text" id="user-condition" placeholder="예: 당뇨, 고혈압, 비만 등" required>
+                        <label for="healthInput">기저질환, 알러지, 복용 중인 약물, 체질 등</label>
+                        <div class="input-row">
+                            <input type="text" id="healthInput" placeholder="예: 과체중, 저체중, 고령, 성장기 등">
+                            <button type="button" onclick="addHealthItem()" class="btn-primary">추가</button>
+                        </div>
                     </div>
-                    <div class="input-field">
-                        <label for="user-notes">특이사항 및 기저질환 상세</label>
-                        <textarea id="user-notes" rows="3" placeholder="복용 중인 약물이나 알레르기 등을 적어주세요."></textarea>
-                    </div>
-                    <button type="submit" id="submit-btn" class="btn-primary">저장하기</button>
+                    <p class="muted mt-2">입력한 항목은 하이퍼링크로 표시됩니다.</p>
+                    <div id="healthTags" class="tag-list mt-3"></div>
                 </form>
-
-                <!-- 입력된 상태 표시 영역 -->
-                <div id="health-display" class="display-box mt-4" style="display: none;">
-                    <h3>등록된 건강 상태 정보</h3>
-                    <p><strong>질환/상태:</strong> <span id="display-condition">-</span></p>
-                    <p><strong>특이사항:</strong> <span id="display-notes">-</span></p>
-                    <button type="button" id="edit-btn" class="btn-secondary mt-2">수정하기</button>
-                </div>
             </div>
 
             <!-- (2) 주요 질환별 주의/제한 성분 가이드 -->
