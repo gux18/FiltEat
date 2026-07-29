@@ -21,16 +21,41 @@ function renderTags() {
   `).join('');
   localStorage.setItem('avoidList', JSON.stringify(avoidList));
 }
-
-function addAvoidItem() {
+// 기피 재료 검사
+async function addAvoidItem() {
   const input = document.getElementById('avoidInput');
   const val = input.value.trim();
-  if (val && !avoidList.includes(val)) {
-    avoidList.push(val);
-    input.value = '';
-    renderTags();
+
+  if (!val) return;
+
+  if (avoidList.includes(val)) {
+    alert("이미 추가된 항목입니다.");
+    return;
   }
+  const isValid = await validateIngredient(val);
+  if (!isValid) {
+    alert("음식 또는 식품 성분만 입력할 수 있습니다.");
+    return;
+  }
+  avoidList.push(val);
+  input.value = "";
+  renderTags();
 }
+
+async function validateIngredient(text) {
+  const response = await fetch("/api/validateIngredient", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      text: text
+    })
+  });
+  const data = await response.json();
+  return data.valid;
+}
+//
 
 function removeAvoidItem(index) {
   avoidList.splice(index, 1);
