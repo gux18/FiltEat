@@ -21,7 +21,7 @@ YES 또는 NO만 출력하세요.
 입력:
 ${text}
 `;
-    const result = await model.generateContent(prompt);
+    /*const result = await model.generateContent(prompt);
 
     const answer = result.response.text()
       .trim()
@@ -29,6 +29,13 @@ ${text}
 
     res.status(200).json({
       valid: answer === "YES"
+    });*/
+    const result = await model.generateContent(prompt);
+    console.log(result);
+    const text = result.response.text();
+    console.log(text);
+    res.status(200).json({
+      valid: text.includes("YES")
     });
   } catch (error) {
     console.error(error);
