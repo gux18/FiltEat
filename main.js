@@ -34,7 +34,13 @@ function removeAvoidItem(index) {
 function handleImageSelect(event) {
   const file = event.target.files[0];
   if (!file) return;
-
+  // 이미지 파일만 업로드 하도록
+  if (!file.type.startsWith("image/")) {
+    alert("이미지 파일만 업로드할 수 있습니다.");
+    event.target.value = "";
+    return;
+  }
+  //
   selectedMimeType = file.type;
   const reader = new FileReader();
   reader.onload = function (e) {
