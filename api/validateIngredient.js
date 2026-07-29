@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   try {
     const { text } = req.body;
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.1-flash-lite",
       contents: `
 사용자가 입력한 단어가 음식, 식재료, 식품첨가물인지 판단하세요.
 맞으면 YES,
