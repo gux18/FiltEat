@@ -5,6 +5,12 @@ let selectedMimeType = null;
 // 페이지 로드 시 태그 렌더링
 renderTags();
 
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.innerText = text;
+  return div.innerHTML;
+}
+
 function renderTags() {
   const container = document.getElementById('avoidTags');
   container.innerHTML = avoidList.map((item, index) => `
