@@ -1,5 +1,5 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+import { GoogleGenAI } from "@google/generative-ai";
+const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY);
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
