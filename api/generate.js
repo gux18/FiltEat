@@ -31,6 +31,7 @@ export default async function handler(req, res) {
     ${avoidList.join(', ')}
 
     결과는 반드시 지정된 JSON 구조로 작성해 주세요.
+    만약 제공된 이미지가 성분표 또는 그 비슷한 계열이 아닌 것 같다면, "이것은 성분표가 아닙니다."라고 말하세요.
     `;
 
     // 이미지 파일 데이터를 InlineData 형태로 변환
