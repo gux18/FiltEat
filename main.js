@@ -49,7 +49,7 @@ async function validateIngredient(text) {
     "Content-Type": "application/json"
   },
   body: JSON.stringify({
-    text: val
+    text: text
   })
 });
   const data = await response.json();
