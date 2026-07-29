@@ -9,7 +9,7 @@ function renderTags() {
   const container = document.getElementById('avoidTags');
   container.innerHTML = avoidList.map((item, index) => `
     <span class="inline-flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-200 text-xs px-3 py-1.5 rounded-full font-medium">
-      ${item}
+      ${escapeHtml(item)}
       <button onclick="removeAvoidItem(${index})" class="hover:text-rose-800 font-bold ml-1">×</button>
     </span>
   `).join('');
