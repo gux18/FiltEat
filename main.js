@@ -45,10 +45,10 @@ async function addAvoidItem() {
 }
 
 async function validateIngredient(text) {
-  let result = false;
+  let result = true;
 
   if (text.length > 30) {
-    result = true
+    result = false
   }
 
   return result;
