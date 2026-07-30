@@ -1,6 +1,41 @@
 let healthList = JSON.parse(localStorage.getItem('healthList') || '[]');
 let isGuideSubmitting = false;
 let guideButtonLockTimer = null;
+const GUIDE_SUBMIT_SNAPSHOT_KEY = 'food-avoidance-guide-submit-snapshot';
+
+function getComparableHealthList(values) {
+  return [...new Set((Array.isArray(values) ? values : [])
+    .map((item) => String(item || '').trim())
+    .filter(Boolean))].sort();
+}
+
+function getCurrentGuideSubmitPayload() {
+  return {
+    healthList: getComparableHealthList(healthList)
+  };
+}
+
+function loadGuideSubmitSnapshot() {
+  try {
+    const saved = sessionStorage.getItem(GUIDE_SUBMIT_SNAPSHOT_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch (error) {
+    console.warn('가이드 스냅샷을 불러오지 못했습니다.', error);
+    return null;
+  }
+}
+
+function saveGuideSubmitSnapshot(payload) {
+  try {
+    sessionStorage.setItem(GUIDE_SUBMIT_SNAPSHOT_KEY, JSON.stringify(payload));
+  } catch (error) {
+    console.warn('가이드 스냅샷을 저장하지 못했습니다.', error);
+  }
+}
+
+function isGuidePayloadSameAsSnapshot(payload, snapshot) {
+  return JSON.stringify(payload) === JSON.stringify(snapshot);
+}
 
 function escapeHtml(value) {
   return String(value || '')
@@ -38,6 +73,7 @@ function renderHealthTags() {
   }
 
   localStorage.setItem('healthList', JSON.stringify(healthList));
+  setGuideSubmitButtonState(document.getElementById('guideSendBtn'), false);
 }
 
 function addHealthItem() {
@@ -94,6 +130,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   renderHealthTags();
+  setGuideSubmitButtonState(document.getElementById('guideSendBtn'), false);
 });
 
 // --- API 통신 관련 유틸 및 전송 함수 ---
@@ -127,11 +164,18 @@ function normalizeListValue(value) {
 function setGuideSubmitButtonState(sendBtn, isSubmitting) {
   if (!sendBtn) return;
 
-  sendBtn.disabled = isSubmitting;
+  const payload = getCurrentGuideSubmitPayload();
+  const snapshot = loadGuideSubmitSnapshot();
+  const hasSameSnapshot = !!snapshot && isGuidePayloadSameAsSnapshot(payload, snapshot);
+  const hasItems = payload.healthList.length > 0;
+
+  sendBtn.disabled = isSubmitting || !hasItems || hasSameSnapshot;
 
   const label = sendBtn.querySelector('span:last-child');
   if (label) {
-    label.textContent = isSubmitting ? '전송 중...' : '전송하기';
+    label.textContent = isSubmitting
+      ? '전송 중...'
+      : (hasSameSnapshot ? '저장된 내용과 같아 전송할 수 없습니다' : '전송하기');
   }
 }
 
@@ -170,6 +214,13 @@ async function submitGuideData() {
 
   if (!Array.isArray(healthList) || healthList.length === 0) {
     alert('건강 상태를 최소 1개 이상 입력해주세요.');
+    return;
+  }
+
+  const payload = getCurrentGuideSubmitPayload();
+  const snapshot = loadGuideSubmitSnapshot();
+  if (snapshot && isGuidePayloadSameAsSnapshot(payload, snapshot)) {
+    setGuideSubmitButtonState(sendBtn, false);
     return;
   }
 
@@ -220,6 +271,9 @@ async function submitGuideData() {
       healthList = healthList.filter((item) => !abnormalList.includes(String(item).trim()));
       renderHealthTags();
     }
+
+    saveGuideSubmitSnapshot(getCurrentGuideSubmitPayload());
+    setGuideSubmitButtonState(sendBtn, false);
   } catch (error) {
     if (resultBox) {
       resultBox.textContent = getErrorMessage(error, null);
