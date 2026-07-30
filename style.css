@@ -2976,3 +2976,93 @@ button.secondary:hover,
     grid-column: auto;
   }
 }
+
+/* 건강 가이드 AI 조언 버튼 */
+
+.guide-ai-button {
+  width: 100%;
+  min-height: 48px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  margin-top: 14px;
+  padding: 11px 18px;
+
+  border: 1px solid #c7d2fe;
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #eef2ff,
+      #f5f3ff
+    );
+
+  color: #4338ca;
+
+  font-size: 14px;
+  font-weight: 750;
+
+  box-shadow: 0 5px 15px rgba(79, 70, 229, 0.1);
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.guide-ai-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+
+  border-color: #a5b4fc;
+
+  background:
+    linear-gradient(
+      135deg,
+      #e0e7ff,
+      #ede9fe
+    );
+
+  box-shadow: 0 9px 20px rgba(79, 70, 229, 0.16);
+}
+
+.guide-ai-button:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+
+.guide-ai-button:focus-visible {
+  outline: none;
+
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.14),
+    0 7px 18px rgba(79, 70, 229, 0.14);
+}
+
+.guide-ai-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+.guide-ai-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 24px;
+  height: 24px;
+
+  border-radius: 8px;
+
+  background: rgba(255, 255, 255, 0.75);
+  color: #6366f1;
+
+  font-size: 14px;
+  line-height: 1;
+}
