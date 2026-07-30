@@ -1,6 +1,8 @@
 let avoidList = JSON.parse(localStorage.getItem('avoidList') || '["우유", "대두", "밀"]');
 let selectedBase64 = null;
 let selectedMimeType = null;
+let analyzeButtonLockTimer = null;
+let analyzeButtonOriginalHtml = '';
 
 
 
@@ -67,6 +69,33 @@ function removeAvoidItem(index) {
   renderTags();
 }
 
+function lockAnalyzeButton(btn) {
+  if (!btn) return;
+
+  if (!analyzeButtonOriginalHtml) {
+    analyzeButtonOriginalHtml = btn.innerHTML;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `
+    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+    <span>분석 중...</span>
+  `;
+
+  if (analyzeButtonLockTimer) {
+    clearTimeout(analyzeButtonLockTimer);
+  }
+
+  analyzeButtonLockTimer = setTimeout(() => {
+    btn.disabled = false;
+    btn.innerHTML = analyzeButtonOriginalHtml;
+    analyzeButtonLockTimer = null;
+  }, 5000);
+}
+
 function handleImageSelect(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -103,14 +132,9 @@ async function analyzeImage() {
   console.log('2. fetch 요청 직전');
 
   const btn = document.getElementById('analyzeBtn');
-  btn.disabled = true;
-  btn.innerHTML = `
-    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-    </svg>
-    <span>분석 중...</span>
-  `;
+  if (!btn) return;
+
+  lockAnalyzeButton(btn);
 
   try {
     console.log('3. fetch 요청 시작');
@@ -148,9 +172,6 @@ async function analyzeImage() {
     displayResults(data);
   } catch (err) {
     alert('오류: ' + err.message);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = `<span>AI로 기피물질 검사하기</span>`;
   }
 }
 
