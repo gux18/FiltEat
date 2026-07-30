@@ -1,84 +1,280 @@
 <!DOCTYPE html>
 <html lang="ko">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>건강 상태에 따라 피해야 할 성분</title>
-        <link rel="stylesheet" href="../style.css">
-    </head>
-    <body class="bg-slate-50 min-h-screen text-slate-800 p-4">
-        <div class="wrap">
-            <!-- 메인 타이틀 카드 -->
-            <div class="card">
-                <h1>건강 상태에 따라 피해야 할 성분</h1>
-                <p class="muted">연령, 질환 등 건강 상태별로 피해야 할 성분을 확인하세요.</p>
-            </div>
+<head>
+  <meta charset="UTF-8">
 
-            <!-- (1) 사용자 건강 상태 입력 및 수정 폼 -->
-            <div class="card mt-4">
-                <h2>내 건강 상태 입력</h2>
-                <form id="health-form" class="form-group" onsubmit="event.preventDefault(); addHealthItem();">
-                    <div class="input-field">
-                        <label for="healthInput">기저질환, 알러지, 복용 중인 약물, 체질 등</label>
-                        <div class="input-row">
-                            <input type="text" id="healthInput" placeholder="예: 과체중, 저체중, 고령, 성장기 등">
-                            <button type="button" onclick="addHealthItem()" class="btn-primary">추가</button>
-                        </div>
-                    </div>
-                    <p class="muted mt-2">입력한 항목은 하이퍼링크로 표시됩니다.</p>
-                    <div id="healthTags" class="tag-list mt-3"></div>
-                </form>
-            </div>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-            <!-- (2) 주요 질환별 주의/제한 성분 가이드 -->
-            <div class="card mt-4">
-                <h2>질환별 주의 성분 가이드</h2>
+  <title>건강별 주의 성분</title>
 
-                <!-- 당뇨 -->
-                <section class="disease-info">
-                    <h3>당뇨 환자</h3>
-                    <div class="warning-box">
-                        <strong>🚨 매우 주의할 성분:</strong>
-                        <p>단당류(설탕, 액상과당, 포도당), 정제 탄수화물 (혈당을 급격히 상승시켜 위험합니다.)</p>
-                    </div>
-                    <div class="caution-box">
-                        <strong>⚠️ 피하는 것이 좋은 성분:</strong>
-                        <p>인공지능 조미료/말토덱스트린(숨은 당류), 과도한 과일당, 포화지방 (인슐린 저항성을 악화시킬 수 있습니다.)</p>
-                    </div>
-                </section>
+  <link rel="stylesheet" href="../style.css">
+</head>
 
-                <hr class="divider">
+<body class="guide-page">
+  <main class="guide-shell">
 
-                <!-- 고혈압 -->
-                <section class="disease-info">
-                    <h3>고혈압 환자</h3>
-                    <div class="warning-box">
-                        <strong>🚨 매우 주의할 성분:</strong>
-                        <p>고나트륨/소금, 감초 추출물(글리시리진) (혈압을 상승시키고 부종을 유발할 수 있습니다.)</p>
-                    </div>
-                    <div class="caution-box">
-                        <strong>⚠️ 피하는 것이 좋은 성분:</strong>
-                        <p>포화지방 및 트랜스지방, 카페인(고용량), 포장식품의 합성보존제 (혈관 건강에 부담을 줍니다.)</p>
-                    </div>
-                </section>
+    <!-- 홈페이지 이동 -->
+    <a href="../index.html" class="home-button">
+      <span aria-hidden="true">←</span>
+      홈페이지로
+    </a>
 
-                <hr class="divider">
+    <!-- 상단 소개 -->
+    <header class="guide-hero">
+      <div class="guide-hero-content">
+        <span class="guide-eyebrow">HEALTH GUIDE</span>
 
-                <!-- 비만 -->
-                <section class="disease-info">
-                    <h3>비만 환자</h3>
-                    <div class="warning-box">
-                        <strong>🚨 매우 주의할 성분:</strong>
-                        <p>트랜스지방, 고성분 설탕/액상과당, 알코올 (체지방 축적과 대사 증후군 유발의 주원인입니다.)</p>
-                    </div>
-                    <div class="caution-box">
-                        <strong>⚠️ 피하는 것이 좋은 성분:</strong>
-                        <p>인공 감미료(장내 미생물 환경 변화 가능성), 정제 유제품, 고칼로리 드레싱 및 소스류</p>
-                    </div>
-                </section>
-            </div>
+        <h1>
+          건강 상태에 따른<br>
+          주의 성분을 확인하세요
+        </h1>
+
+        <p>
+          연령, 질환, 알레르기, 복용 중인 약물 등 개인의 건강 상태에 따라
+          섭취에 주의해야 할 성분을 확인할 수 있습니다.
+        </p>
+
+        <div class="guide-badges">
+          <span>건강 상태 저장</span>
+          <span>질환별 성분 안내</span>
+          <span>관련 정보 검색</span>
         </div>
+      </div>
 
-        <script src="guide.js"></script>
-    </body>
+      <div class="guide-hero-visual">
+        <div class="health-visual-card">
+          <div class="health-visual-icon">♡</div>
+
+          <strong>맞춤형 건강 정보</strong>
+
+          <small>
+            건강 상태를 등록하고<br>
+            필요한 정보를 확인하세요.
+          </small>
+        </div>
+      </div>
+    </header>
+
+    <div class="guide-layout">
+
+      <!-- 왼쪽 주요 콘텐츠 -->
+      <div class="guide-main-column">
+
+        <!-- 건강 상태 입력 -->
+        <section class="guide-card health-input-card">
+          <div class="guide-card-heading">
+            <span class="guide-step">1</span>
+
+            <div>
+              <h2>내 건강 상태 입력</h2>
+
+              <p>
+                기저질환, 알레르기, 복용 중인 약물이나 체질을 입력하세요.
+              </p>
+            </div>
+          </div>
+
+          <form
+            id="health-form"
+            onsubmit="event.preventDefault(); addHealthItem();"
+          >
+            <label
+              for="healthInput"
+              class="guide-input-label"
+            >
+              건강 상태
+            </label>
+
+            <div class="guide-input-row">
+              <input
+                type="text"
+                id="healthInput"
+                maxlength="30"
+                placeholder="예: 당뇨, 고혈압, 성장기, 고령"
+              >
+
+              <button
+                type="button"
+                class="guide-add-button"
+                onclick="addHealthItem()"
+              >
+                추가
+              </button>
+            </div>
+
+            <p class="guide-input-help">
+              입력한 항목은 관련 정보를 검색할 수 있는 태그로 표시됩니다.
+            </p>
+
+            <div
+              id="healthTags"
+              class="tag-list guide-tag-list"
+            ></div>
+          </form>
+        </section>
+
+        <!-- 질환별 안내 -->
+        <section class="guide-card">
+          <div class="guide-card-heading">
+            <span class="guide-step">2</span>
+
+            <div>
+              <h2>질환별 주의 성분 가이드</h2>
+
+              <p>
+                대표적인 건강 상태에 따라 주의할 성분을 확인하세요.
+              </p>
+            </div>
+          </div>
+
+          <div class="disease-grid">
+
+            <!-- 당뇨 -->
+            <article class="disease-card">
+              <div class="disease-card-header">
+                <span class="disease-icon diabetes-icon">D</span>
+
+                <div>
+                  <span class="disease-category">혈당 관리</span>
+                  <h3>당뇨 환자</h3>
+                </div>
+              </div>
+
+              <div class="warning-box">
+                <strong>매우 주의할 성분</strong>
+
+                <p>
+                  단당류, 설탕, 액상과당, 포도당, 정제 탄수화물은
+                  혈당을 빠르게 상승시킬 수 있습니다.
+                </p>
+              </div>
+
+              <div class="caution-box">
+                <strong>섭취에 유의할 성분</strong>
+
+                <p>
+                  말토덱스트린, 과도한 과당, 포화지방은
+                  혈당과 대사 건강에 부담을 줄 수 있습니다.
+                </p>
+              </div>
+            </article>
+
+            <!-- 고혈압 -->
+            <article class="disease-card">
+              <div class="disease-card-header">
+                <span class="disease-icon pressure-icon">P</span>
+
+                <div>
+                  <span class="disease-category">혈압 관리</span>
+                  <h3>고혈압 환자</h3>
+                </div>
+              </div>
+
+              <div class="warning-box">
+                <strong>매우 주의할 성분</strong>
+
+                <p>
+                  고나트륨 식품, 소금, 감초 추출물의 글리시리진은
+                  혈압 상승과 부종에 영향을 줄 수 있습니다.
+                </p>
+              </div>
+
+              <div class="caution-box">
+                <strong>섭취에 유의할 성분</strong>
+
+                <p>
+                  포화지방, 트랜스지방, 고용량 카페인은
+                  심혈관 건강에 부담을 줄 수 있습니다.
+                </p>
+              </div>
+            </article>
+
+            <!-- 비만 -->
+            <article class="disease-card">
+              <div class="disease-card-header">
+                <span class="disease-icon weight-icon">W</span>
+
+                <div>
+                  <span class="disease-category">체중 관리</span>
+                  <h3>비만 관리</h3>
+                </div>
+              </div>
+
+              <div class="warning-box">
+                <strong>매우 주의할 성분</strong>
+
+                <p>
+                  트랜스지방, 과도한 설탕, 액상과당, 알코올은
+                  체지방 축적과 대사 건강에 영향을 줄 수 있습니다.
+                </p>
+              </div>
+
+              <div class="caution-box">
+                <strong>섭취에 유의할 성분</strong>
+
+                <p>
+                  고열량 드레싱, 소스류와 과도한 가공식품은
+                  전체 열량 섭취를 증가시킬 수 있습니다.
+                </p>
+              </div>
+            </article>
+
+          </div>
+        </section>
+      </div>
+
+      <!-- 오른쪽 안내 -->
+      <aside class="guide-side-column">
+
+        <section class="guide-side-card">
+          <span class="guide-side-number">1</span>
+
+          <div>
+            <h3>건강 상태 등록</h3>
+            <p>
+              현재 건강 상태나 주의할 항목을 간단히 입력하세요.
+            </p>
+          </div>
+        </section>
+
+        <section class="guide-side-card">
+          <span class="guide-side-number">2</span>
+
+          <div>
+            <h3>관련 정보 확인</h3>
+            <p>
+              생성된 태그를 누르면 관련 성분 정보를 검색할 수 있습니다.
+            </p>
+          </div>
+        </section>
+
+        <section class="guide-side-card">
+          <span class="guide-side-number">3</span>
+
+          <div>
+            <h3>제품 성분 비교</h3>
+            <p>
+              제품 포장지의 영양정보와 원재료명을 함께 확인하세요.
+            </p>
+          </div>
+        </section>
+
+        <section class="guide-notice-card">
+          <strong>건강 정보 이용 안내</strong>
+
+          <p>
+            이 페이지의 정보는 일반적인 참고 자료입니다.
+            질환 치료나 식단 변경이 필요한 경우 의료 전문가와 상담하세요.
+          </p>
+        </section>
+
+      </aside>
+    </div>
+  </main>
+
+  <script src="guide.js"></script>
+</body>
 </html>
