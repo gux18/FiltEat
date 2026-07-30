@@ -54,6 +54,16 @@
                 line-height: 1;
                 cursor: pointer;
             }
+            .api-result {
+                margin-top: 12px;
+                padding: 12px 14px;
+                border: 1px solid #dbeafe;
+                border-radius: 12px;
+                background: #f8fbff;
+                color: #1e3a8a;
+                line-height: 1.6;
+                white-space: pre-wrap;
+            }
         </style>
     </head>
     <body>
@@ -89,6 +99,13 @@
                     </div>
                     <div id="ingredientTags" class="tag-list mt-3"></div>
                 </form>
+            </div>
+
+            <div class="card mt-4">
+                <h2>API로 전송</h2>
+                <p class="muted">입력한 식품과 성분 정보를 서버로 전달합니다.</p>
+                <button type="button" id="sendBtn" onclick="submitAlternativeData()">API로 전송</button>
+                <div id="apiResult" class="api-result">전송 전입니다.</div>
             </div>
         </div>
 
