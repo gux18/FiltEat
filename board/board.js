@@ -33,15 +33,28 @@
       const submitBtn = document.getElementById('submitBtn');
       const cancelBtn = document.getElementById('cancelBtn');
 
-      function toggleForm() {
-        panel.classList.toggle('active');
-        if (panel.classList.contains('active')) {
+      function setFormOpen(isOpen) {
+        panel.classList.toggle('active', isOpen);
+        toggleBtn.classList.toggle('open', isOpen);
+      
+        toggleBtn.setAttribute('aria-expanded', String(isOpen));
+        toggleBtn.setAttribute('aria-label', isOpen ? '게시글 작성창 닫기' : '게시글 작성창 열기');
+      
+        if (isOpen) {
           memoInput.focus();
         }
       }
-
+      
+      function toggleForm() {
+        const isOpen = panel.classList.contains('active');
+        setFormOpen(!isOpen);
+      }
+      
       toggleBtn.addEventListener('click', toggleForm);
-      cancelBtn.addEventListener('click', toggleForm);
+      
+      cancelBtn.addEventListener('click', () => {
+        setFormOpen(false);
+      });
 
       // 메모 등록
       submitBtn.addEventListener('click', async () => {
