@@ -62,26 +62,26 @@ function removeHealthItem(index) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('health-form');
   const input = document.getElementById('healthInput');
-  if (input) {
-    input.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        addHealthItem();
-      }
+  const addButton = document.getElementById('healthAddButton');
+  const sendBtn = document.getElementById('guideSendBtn');
+
+  if (form) {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      addHealthItem();
     });
   }
-  // API 버튼과 결과 영역 연결
-  const sendBtn = document.getElementById('guideSendBtn');
-  const resultBox = document.getElementById('guideApiResult');
+
+  if (addButton) {
+    addButton.addEventListener('click', addHealthItem);
+  }
 
   if (sendBtn) {
     sendBtn.addEventListener('click', submitGuideData);
   }
 
-  renderHealthTags();
-
-  // 유틸: 엔터로 항목 추가
   if (input) {
     input.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
@@ -90,6 +90,8 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  renderHealthTags();
 });
 
 // --- API 통신 관련 유틸 및 전송 함수 ---
