@@ -1,4 +1,5 @@
 let healthList = JSON.parse(localStorage.getItem('healthList') || '[]');
+let isGuideSubmitting = false;
 
 function escapeHtml(value) {
   return String(value || '')
@@ -122,23 +123,42 @@ function normalizeListValue(value) {
   return [];
 }
 
+function setGuideSubmitButtonState(sendBtn, isSubmitting) {
+  if (!sendBtn) return;
+
+  sendBtn.disabled = isSubmitting;
+
+  const label = sendBtn.querySelector('span:last-child');
+  if (label) {
+    label.textContent = isSubmitting ? '전송 중...' : '전송하기';
+  }
+}
+
+function getErrorMessage(error, data) {
+  const candidate = data?.error || data?.message || error?.message;
+  if (typeof candidate === 'string' && candidate.trim()) {
+    return candidate.trim();
+  }
+
+  return '오류가 발생했습니다. 서버 또는 네트워크를 확인해주세요.';
+}
+
 async function submitGuideData() {
   const sendBtn = document.getElementById('guideSendBtn');
   const resultBox = document.getElementById('guideApiResult');
 
-  // 원래 버튼 텍스트 백업
-  const originalBtnText = sendBtn ? sendBtn.textContent : '조언 받기';
+  if (isGuideSubmitting) {
+    return;
+  }
 
   if (!Array.isArray(healthList) || healthList.length === 0) {
     alert('건강 상태를 최소 1개 이상 입력해주세요.');
     return;
   }
 
-  // 1. 버튼 상태 업데이트 (전송 중 처리)
-  if (sendBtn) {
-    sendBtn.disabled = true;
-    sendBtn.textContent = '전송 중...';
-  }
+  isGuideSubmitting = true;
+
+  setGuideSubmitButtonState(sendBtn, true);
   if (resultBox) {
     resultBox.textContent = '전송 중...';
   }
@@ -185,14 +205,11 @@ async function submitGuideData() {
     }
   } catch (error) {
     if (resultBox) {
-      resultBox.textContent = '오류가 발생했습니다. 서버 또는 네트워크를 확인해주세요.';
+      resultBox.textContent = getErrorMessage(error, null);
     }
     console.error(error);
   } finally {
-    // 3. 버튼 원래 상태 복원
-    if (sendBtn) {
-      sendBtn.disabled = false;
-      sendBtn.textContent = originalBtnText;
-    }
+    isGuideSubmitting = false;
+    setGuideSubmitButtonState(sendBtn, false);
   }
 }
