@@ -98,6 +98,21 @@ function removeIngredientItem(index) {
   renderIngredientTags();
 }
 
+function normalizeListValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
 async function submitAlternativeData() {
   const resultBox = document.getElementById('apiResult');
   const sendBtn = document.getElementById('sendBtn');
@@ -117,13 +132,17 @@ async function submitAlternativeData() {
   }
 
   try {
+    const requestBody = {
+      foodList: normalizeListValue(foodList),
+      ingredientList: normalizeListValue(ingredientList),
+      foodInputText: normalizeListValue(foodList).join(', '),
+      ingredientInputText: normalizeListValue(ingredientList).join(', ')
+    };
+
     const response = await fetch('/api/alternative', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        foodList,
-        ingredientList
-      })
+      body: JSON.stringify(requestBody)
     });
 
     let data = null;
@@ -138,7 +157,7 @@ async function submitAlternativeData() {
     }
 
     if (resultBox) {
-      const message = data.message || '전송이 완료되었습니다.';
+      const message = data.message || data.answer || '전송이 완료되었습니다.';
       const responseText = message;
       resultBox.innerHTML = escapeHtml(responseText).replace(/\n/g, '<br>');
     }
