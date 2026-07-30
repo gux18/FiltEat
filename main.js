@@ -32,16 +32,20 @@ async function addAvoidItem() {
     alert("이미 추가된 항목입니다.");
     return;
   }
+  /*
   const isValid = await validateIngredient(val);
   if (!isValid) {
     alert("음식 또는 식품 성분만 입력할 수 있습니다.");
     return;
   }
+  이상한 입력은 그냥 로컬로 처리하는 게 좋을 듯
+  적당히 수정되면 주석 처리 해제
+  */
   avoidList.push(val);
   input.value = "";
   renderTags();
 }
-
+/* api 쓰지 않고 로컬로 처리하도록 수정한 후 주석 처리 해제
 async function validateIngredient(text) {
   const response = await fetch("/api/validateIngredient", {
   method: "POST",
@@ -51,6 +55,7 @@ async function validateIngredient(text) {
   const data = await response.json();
   return data.valid;
 }
+*/
 //
 
 function removeAvoidItem(index) {
