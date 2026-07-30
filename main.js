@@ -48,13 +48,13 @@ async function addAvoidItem() {
 }
 /* api 쓰지 않고 로컬로 처리하도록 수정한 후 주석 처리 해제 */
 async function validateIngredient(text) {
-  const response = await fetch("/api/validateIngredient", {
-  method: "POST",
-  headers: {"Content-Type": "application/json"},
-  body: JSON.stringify({text:text})
-  });
-  const data = await response.json();
-  return data.valid;
+  result = false;
+
+  if (text.length > 30) {
+    result = true
+  }
+  
+  return result;
 }
 
 //
