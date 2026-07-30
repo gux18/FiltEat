@@ -3,9 +3,69 @@ let selectedBase64 = null;
 let selectedMimeType = null;
 let analyzeButtonLockTimer = null;
 let analyzeButtonOriginalHtml = '';
+const ANALYZE_SUBMIT_SNAPSHOT_KEY = 'food-avoidance-main-submit-snapshot';
 
+function getComparableAvoidList(values) {
+  return [...new Set((Array.isArray(values) ? values : [])
+    .map((item) => String(item || '').trim())
+    .filter(Boolean))].sort();
+}
 
+function getCurrentAnalyzePayload() {
+  return {
+    avoidList: getComparableAvoidList(avoidList),
+    selectedBase64: selectedBase64 || null,
+    selectedMimeType: selectedMimeType || null
+  };
+}
 
+function loadAnalyzeSubmitSnapshot() {
+  try {
+    const saved = sessionStorage.getItem(ANALYZE_SUBMIT_SNAPSHOT_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch (error) {
+    console.warn('분석 스냅샷을 불러오지 못했습니다.', error);
+    return null;
+  }
+}
+
+function saveAnalyzeSubmitSnapshot(payload) {
+  try {
+    sessionStorage.setItem(ANALYZE_SUBMIT_SNAPSHOT_KEY, JSON.stringify(payload));
+  } catch (error) {
+    console.warn('분석 스냅샷을 저장하지 못했습니다.', error);
+  }
+}
+
+function isAnalyzePayloadSameAsSnapshot(payload, snapshot) {
+  return JSON.stringify(payload) === JSON.stringify(snapshot);
+}
+
+function syncAnalyzeButtonState() {
+  const btn = document.getElementById('analyzeBtn');
+  if (!btn) return;
+
+  if (btn.dataset.analyzeState === 'loading') {
+    return;
+  }
+
+  if (!analyzeButtonOriginalHtml) {
+    analyzeButtonOriginalHtml = btn.innerHTML;
+  }
+
+  const payload = getCurrentAnalyzePayload();
+  const snapshot = loadAnalyzeSubmitSnapshot();
+  const hasSameSnapshot = !!snapshot && isAnalyzePayloadSameAsSnapshot(payload, snapshot);
+  const canSubmit = Boolean(selectedBase64) && avoidList.length > 0;
+
+  btn.disabled = hasSameSnapshot || !canSubmit;
+  btn.innerHTML = analyzeButtonOriginalHtml;
+
+  const label = btn.querySelector('span');
+  if (label) {
+    label.textContent = hasSameSnapshot ? '저장된 내용과 같아 분석할 수 없습니다' : 'AI로 기피물질 검사하기';
+  }
+}
 
 // 페이지 로드 시 태그 렌더링
 renderTags();
@@ -30,6 +90,7 @@ function renderTags() {
     </span>
   `).join('');
   localStorage.setItem('avoidList', JSON.stringify(avoidList));
+  syncAnalyzeButtonState();
 }
 // 기피 재료 검사
 async function addAvoidItem() {
@@ -76,6 +137,7 @@ function lockAnalyzeButton(btn) {
     analyzeButtonOriginalHtml = btn.innerHTML;
   }
 
+  btn.dataset.analyzeState = 'loading';
   btn.disabled = true;
   btn.innerHTML = `
     <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -90,9 +152,11 @@ function lockAnalyzeButton(btn) {
   }
 
   analyzeButtonLockTimer = setTimeout(() => {
+    btn.dataset.analyzeState = 'ready';
     btn.disabled = false;
     btn.innerHTML = analyzeButtonOriginalHtml;
     analyzeButtonLockTimer = null;
+    syncAnalyzeButtonState();
   }, 5000);
 }
 
@@ -115,6 +179,7 @@ function handleImageSelect(event) {
     document.getElementById('imagePreview').src = fullBase64;
     document.getElementById('previewContainer').classList.remove('hidden');
     document.getElementById('resultSection').classList.add('hidden');
+    syncAnalyzeButtonState();
   };
   reader.readAsDataURL(file);
 }
@@ -126,6 +191,13 @@ async function analyzeImage() {
   if (!selectedBase64) return;
   if (avoidList.length === 0) {
     alert('최소 하나 이상의 기피물질을 등록해주세요.');
+    return;
+  }
+
+  const payload = getCurrentAnalyzePayload();
+  const snapshot = loadAnalyzeSubmitSnapshot();
+  if (snapshot && isAnalyzePayloadSameAsSnapshot(payload, snapshot)) {
+    syncAnalyzeButtonState();
     return;
   }
 
@@ -169,6 +241,8 @@ async function analyzeImage() {
       renderTags();
     }
 
+    saveAnalyzeSubmitSnapshot(getCurrentAnalyzePayload());
+    syncAnalyzeButtonState();
     displayResults(data);
   } catch (err) {
     alert('오류: ' + err.message);
