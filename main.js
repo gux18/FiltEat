@@ -45,13 +45,11 @@ async function addAvoidItem() {
 }
 
 async function validateIngredient(text) {
-  let result = true;
+  const t = (text || '').trim();
+  if (!t || t.length > 30) return false;
 
-  if (text.length > 30) {
-    result = false
-  }
-
-  return result;
+  const set = await loadIngredientSet();
+  return set.has(t.toLowerCase());
 }
 
 //
