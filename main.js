@@ -36,6 +36,11 @@ function escapeHtml(text) {
 
 function renderTags() {
   const container = document.getElementById('avoidTags');
+  
+  if (!container) {
+    return;
+  }
+  
   container.innerHTML = avoidList.map((item, index) => `
     <span class="inline-flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-200 text-xs px-3 py-1.5 rounded-full font-medium">
       ${escapeHtml(item)}
