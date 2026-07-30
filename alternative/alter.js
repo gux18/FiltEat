@@ -1,5 +1,6 @@
 let foodList = JSON.parse(localStorage.getItem('foodList') || '[]');
 let ingredientList = JSON.parse(localStorage.getItem('ingredientList') || '[]');
+let buttonLockTimer = null;
 
 function escapeHtml(value) {
   return value
@@ -113,6 +114,23 @@ function normalizeListValue(value) {
   return [];
 }
 
+function lockSubmitButton(sendBtn) {
+  if (!sendBtn) return;
+
+  sendBtn.disabled = true;
+  sendBtn.textContent = '전송 중...';
+
+  if (buttonLockTimer) {
+    clearTimeout(buttonLockTimer);
+  }
+
+  buttonLockTimer = setTimeout(() => {
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'AI에게 전송';
+    buttonLockTimer = null;
+  }, 5000);
+}
+
 async function submitAlternativeData() {
   const resultBox = document.getElementById('apiResult');
   const sendBtn = document.getElementById('sendBtn');
@@ -123,8 +141,7 @@ async function submitAlternativeData() {
   }
 
   if (sendBtn) {
-    sendBtn.disabled = true;
-    sendBtn.textContent = '전송 중...';
+    lockSubmitButton(sendBtn);
   }
 
   if (resultBox) {
@@ -167,7 +184,7 @@ async function submitAlternativeData() {
     }
     console.error(error);
   } finally {
-    if (sendBtn) {
+    if (sendBtn && !buttonLockTimer) {
       sendBtn.disabled = false;
       sendBtn.textContent = 'AI에게 전송';
     }
