@@ -139,7 +139,8 @@ async function submitAlternativeData() {
 
     if (resultBox) {
       const message = data.message || '전송이 완료되었습니다.';
-      resultBox.innerHTML = escapeHtml(message).replace(/\n/g, '<br>');
+      const responseText = message;
+      resultBox.innerHTML = escapeHtml(responseText).replace(/\n/g, '<br>');
     }
   } catch (error) {
     if (resultBox) {
