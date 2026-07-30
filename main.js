@@ -45,13 +45,9 @@ async function addAvoidItem() {
 async function validateIngredient(text) {
   const response = await fetch("/api/validateIngredient", {
   method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    text: text
-  })
-});
+  headers: {"Content-Type": "application/json"},
+  body: JSON.stringify({text:text})
+  });
   const data = await response.json();
   return data.valid;
 }
