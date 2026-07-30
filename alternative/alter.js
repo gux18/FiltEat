@@ -163,7 +163,7 @@ async function submitAlternativeData() {
     }
   } catch (error) {
     if (resultBox) {
-      resultBox.textContent = `오류: ${error.message}`;
+      resultBox.textContent = '오류가 발생했습니다. 서버에 문제가 생겼을 수 있으니 잠시 후 다시 시도해주세요.';
     }
     console.error(error);
   } finally {
