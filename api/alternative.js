@@ -43,8 +43,14 @@ export default async function handler(req, res) {
     const desiredFood = normalizedFoodValues.join(', ') || '입력된 식품 없음';
     const avoidIngredients = normalizedIngredientValues.join(', ') || '없음';
 
-    const systemInstruction = `입력받은 정보에서 ${avoidIngredients}를 포함하지 않는 ${desiredFood}과(와) 가장 유사한 것을 답변하라. 적절한 것이 없을 경우 찾지 못했다고 답변하라. 답변은 한국어로 짧고 명확하게 작성하라.`;
-    const prompt = '입력된 정보에 맞는 식품이나 대체 식품을 하나 추천해라.';
+    const systemInstruction = '입력받은 정보에 따라 식품이나 대체 식품을 추천하라. 피해야 하는 성분을 포함하지 않는 것만 고려하고, 적절한 것이 없으면 찾지 못했다고 답변하라. 답변은 한국어로 짧고 명확하게 작성하라.';
+    const prompt = [
+      '사용자 입력 정보:',
+      `- 원하는 식품: ${desiredFood}`,
+      `- 피해야 하는 성분: ${avoidIngredients}`,
+      '',
+      '이 정보를 바탕으로 적절한 식품이나 대체 식품을 하나 추천해라.'
+    ].join('\n');
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.1-flash-lite',
