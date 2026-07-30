@@ -67,6 +67,11 @@ function addFoodItem() {
     foodList.push(value);
   }
 
+  if (value.length > 30) {
+    alert("30자 이내의 음식만 입력할 수 있습니다.");
+    return;
+  }
+
   input.value = '';
   renderFoodTags();
 }

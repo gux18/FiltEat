@@ -35,25 +35,22 @@ async function addAvoidItem() {
   
   const isValid = await validateIngredient(val);
   if (!isValid) {
-    alert("영어 제외 음식 또는 식품 성분만 입력할 수 있습니다.");
+    alert("30자 이내의 음식, 성분만 입력할 수 있습니다.");
     return;
   }
-  /*
-  이상한 입력은 그냥 로컬로 처리하는 게 좋을 듯
-  적당히 수정되면 주석 처리 해제
-  */
+
   avoidList.push(val);
   input.value = "";
   renderTags();
 }
-/* api 쓰지 않고 로컬로 처리하도록 수정한 후 주석 처리 해제 */
+
 async function validateIngredient(text) {
-  result = false;
+  let result = false;
 
   if (text.length > 30) {
     result = true
   }
-  
+
   return result;
 }
 
