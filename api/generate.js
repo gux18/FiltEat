@@ -60,7 +60,7 @@ export default async function handler(req, res) {
 
     // Gemini API 호출 (Structured JSON Output 사용)
   const response = await ai.models.generateContent({
-  model: 'gemini-3.1-flash-lite',
+  model: 'gemini-3.5-flash-lite',
   contents: [prompt, imagePart],
   config: {
     responseMimeType: 'application/json',
