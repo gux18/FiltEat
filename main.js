@@ -2,6 +2,29 @@ let avoidList = JSON.parse(localStorage.getItem('avoidList') || '["우유", "대
 let selectedBase64 = null;
 let selectedMimeType = null;
 
+let _ingredientSet = null;
+let _ingredientSetPromise = null;
+
+async function loadIngredientSet() {
+  if (_ingredientSet) return _ingredientSet;
+  if (_ingredientSetPromise) return _ingredientSetPromise;
+
+  _ingredientSetPromise = fetch('ingredients.txt')
+    .then(async (res) => {
+      if (!res.ok) return new Set();
+      const txt = await res.text();
+      const items = txt.split(/\r?\n/).map(s => s.trim().toLowerCase()).filter(Boolean);
+      const set = new Set(items);
+      _ingredientSet = set;
+      return set;
+    })
+    .catch(() => new Set());
+
+  _ingredientSet = await _ingredientSetPromise;
+  return _ingredientSet;
+}
+
+
 // 페이지 로드 시 태그 렌더링
 renderTags();
 
