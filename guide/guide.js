@@ -1,5 +1,6 @@
 let healthList = JSON.parse(localStorage.getItem('healthList') || '[]');
 let isGuideSubmitting = false;
+let guideButtonLockTimer = null;
 
 function escapeHtml(value) {
   return String(value || '')
@@ -134,6 +135,22 @@ function setGuideSubmitButtonState(sendBtn, isSubmitting) {
   }
 }
 
+function lockGuideSubmitButton(sendBtn) {
+  if (!sendBtn) return;
+
+  setGuideSubmitButtonState(sendBtn, true);
+
+  if (guideButtonLockTimer) {
+    clearTimeout(guideButtonLockTimer);
+  }
+
+  guideButtonLockTimer = setTimeout(() => {
+    setGuideSubmitButtonState(sendBtn, false);
+    guideButtonLockTimer = null;
+    isGuideSubmitting = false;
+  }, 5000);
+}
+
 function getErrorMessage(error, data) {
   const candidate = data?.error || data?.message || error?.message;
   if (typeof candidate === 'string' && candidate.trim()) {
@@ -158,7 +175,7 @@ async function submitGuideData() {
 
   isGuideSubmitting = true;
 
-  setGuideSubmitButtonState(sendBtn, true);
+  lockGuideSubmitButton(sendBtn);
   if (resultBox) {
     resultBox.textContent = '전송 중...';
   }
@@ -208,8 +225,5 @@ async function submitGuideData() {
       resultBox.textContent = getErrorMessage(error, null);
     }
     console.error(error);
-  } finally {
-    isGuideSubmitting = false;
-    setGuideSubmitButtonState(sendBtn, false);
   }
 }
