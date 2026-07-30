@@ -73,7 +73,7 @@
           });
 
           memoInput.value = '';
-          panel.classList.remove('active');
+          setFormOpen(false);
         } catch (error) {
           console.error("Firestore 저장 오류:", error);
           alert("글 저장 권한이 없거나 오류가 발생했습니다. (Console 확인)");
@@ -88,7 +88,16 @@
 
       onSnapshot(q, (snapshot) => {
         memoList.innerHTML = '';
-
+        if (snapshot.empty) {
+          memoList.innerHTML = `
+            <div class="board-status-message">
+              아직 작성된 게시글이 없습니다.<br>
+              첫 번째 게시글을 작성해 보세요.
+            </div>
+          `;
+          return;
+        }
+      
         snapshot.forEach((doc) => {
           const data = doc.data();
           const memoDiv = document.createElement('div');
