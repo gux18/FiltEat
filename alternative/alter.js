@@ -1,6 +1,42 @@
 let foodList = JSON.parse(localStorage.getItem('foodList') || '[]');
 let ingredientList = JSON.parse(localStorage.getItem('ingredientList') || '[]');
 let buttonLockTimer = null;
+const ALTERNATIVE_SUBMIT_SNAPSHOT_KEY = 'food-avoidance-alternative-submit-snapshot';
+
+function getComparableList(values) {
+  return [...new Set((Array.isArray(values) ? values : [])
+    .map((item) => String(item || '').trim())
+    .filter(Boolean))].sort();
+}
+
+function getCurrentAlternativeSubmitPayload() {
+  return {
+    foodList: getComparableList(foodList),
+    ingredientList: getComparableList(ingredientList)
+  };
+}
+
+function loadAlternativeSubmitSnapshot() {
+  try {
+    const saved = sessionStorage.getItem(ALTERNATIVE_SUBMIT_SNAPSHOT_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch (error) {
+    console.warn('대체식품 스냅샷을 불러오지 못했습니다.', error);
+    return null;
+  }
+}
+
+function saveAlternativeSubmitSnapshot(payload) {
+  try {
+    sessionStorage.setItem(ALTERNATIVE_SUBMIT_SNAPSHOT_KEY, JSON.stringify(payload));
+  } catch (error) {
+    console.warn('대체식품 스냅샷을 저장하지 못했습니다.', error);
+  }
+}
+
+function isAlternativePayloadSameAsSnapshot(payload, snapshot) {
+  return JSON.stringify(payload) === JSON.stringify(snapshot);
+}
 
 function escapeHtml(value) {
   return value
@@ -44,6 +80,7 @@ function renderFoodTags() {
   }
 
   localStorage.setItem('foodList', JSON.stringify(foodList));
+  setSubmitButtonState(document.getElementById('sendBtn'), false);
 }
 
 function renderIngredientTags() {
@@ -67,6 +104,7 @@ function renderIngredientTags() {
   }
 
   localStorage.setItem('ingredientList', JSON.stringify(ingredientList));
+  setSubmitButtonState(document.getElementById('sendBtn'), false);
 }
 
 function addFoodItem() {
@@ -140,19 +178,31 @@ function normalizeListValue(value) {
   return [];
 }
 
+function setSubmitButtonState(sendBtn, isSubmitting) {
+  if (!sendBtn) return;
+
+  const payload = getCurrentAlternativeSubmitPayload();
+  const snapshot = loadAlternativeSubmitSnapshot();
+  const hasSameSnapshot = !!snapshot && isAlternativePayloadSameAsSnapshot(payload, snapshot);
+  const hasItems = payload.foodList.length > 0 || payload.ingredientList.length > 0;
+
+  sendBtn.disabled = isSubmitting || !hasItems || hasSameSnapshot;
+  sendBtn.textContent = isSubmitting
+    ? '전송 중...'
+    : (hasSameSnapshot ? '저장된 내용과 같아 전송할 수 없습니다' : 'AI에게 전송');
+}
+
 function lockSubmitButton(sendBtn) {
   if (!sendBtn) return;
 
-  sendBtn.disabled = true;
-  sendBtn.textContent = '전송 중...';
+  setSubmitButtonState(sendBtn, true);
 
   if (buttonLockTimer) {
     clearTimeout(buttonLockTimer);
   }
 
   buttonLockTimer = setTimeout(() => {
-    sendBtn.disabled = false;
-    sendBtn.textContent = 'AI에게 전송';
+    setSubmitButtonState(sendBtn, false);
     buttonLockTimer = null;
   }, 5000);
 }
@@ -163,6 +213,13 @@ async function submitAlternativeData() {
 
   if (foodList.length === 0 && ingredientList.length === 0) {
     alert('식품 또는 성분을 최소 1개 이상 입력해주세요.');
+    return;
+  }
+
+  const payload = getCurrentAlternativeSubmitPayload();
+  const snapshot = loadAlternativeSubmitSnapshot();
+  if (snapshot && isAlternativePayloadSameAsSnapshot(payload, snapshot)) {
+    setSubmitButtonState(sendBtn, false);
     return;
   }
 
@@ -226,6 +283,9 @@ async function submitAlternativeData() {
       renderFoodTags();
       renderIngredientTags();
     }
+
+    saveAlternativeSubmitSnapshot(getCurrentAlternativeSubmitPayload());
+    setSubmitButtonState(sendBtn, false);
   } catch (error) {
     if (resultBox) {
       resultBox.textContent = '오류가 발생했습니다. 서버에 문제가 생겼을 수 있으니 잠시 후 다시 시도해주세요.';
@@ -233,8 +293,7 @@ async function submitAlternativeData() {
     console.error(error);
   } finally {
     if (sendBtn && !buttonLockTimer) {
-      sendBtn.disabled = false;
-      sendBtn.textContent = 'AI에게 전송';
+      setSubmitButtonState(sendBtn, false);
     }
   }
 }
@@ -268,4 +327,5 @@ window.addEventListener('DOMContentLoaded', () => {
 
   renderFoodTags();
   renderIngredientTags();
+  setSubmitButtonState(document.getElementById('sendBtn'), false);
 });
