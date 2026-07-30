@@ -98,6 +98,56 @@ function removeIngredientItem(index) {
   renderIngredientTags();
 }
 
+async function submitAlternativeData() {
+  const resultBox = document.getElementById('apiResult');
+  const sendBtn = document.getElementById('sendBtn');
+
+  if (foodList.length === 0 && ingredientList.length === 0) {
+    alert('식품 또는 성분을 최소 1개 이상 입력해주세요.');
+    return;
+  }
+
+  if (sendBtn) {
+    sendBtn.disabled = true;
+    sendBtn.textContent = '전송 중...';
+  }
+
+  if (resultBox) {
+    resultBox.textContent = '전송 중...';
+  }
+
+  try {
+    const response = await fetch('/api/alternative', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        foodList,
+        ingredientList
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || '전송에 실패했습니다.');
+    }
+
+    if (resultBox) {
+      const message = data.message || '전송이 완료되었습니다.';
+      resultBox.innerHTML = escapeHtml(message).replace(/\n/g, '<br>');
+    }
+  } catch (error) {
+    if (resultBox) {
+      resultBox.textContent = `오류: ${error.message}`;
+    }
+    console.error(error);
+  } finally {
+    if (sendBtn) {
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'API로 전송';
+    }
+  }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   const foodInput = document.getElementById('foodInput');
   const ingredientInput = document.getElementById('ingredientInput');
