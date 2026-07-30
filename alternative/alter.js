@@ -126,9 +126,15 @@ async function submitAlternativeData() {
       })
     });
 
-    const data = await response.json();
+    let data = null;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      data = { message: await response.text() };
+    }
+
     if (!response.ok) {
-      throw new Error(data.error || '전송에 실패했습니다.');
+      throw new Error(data.error || data.message || '전송에 실패했습니다.');
     }
 
     if (resultBox) {
