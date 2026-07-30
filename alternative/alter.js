@@ -150,7 +150,7 @@ async function submitAlternativeData() {
   } finally {
     if (sendBtn) {
       sendBtn.disabled = false;
-      sendBtn.textContent = 'API로 전송';
+      sendBtn.textContent = 'AI에게 전송';
     }
   }
 }
