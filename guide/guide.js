@@ -1,7 +1,7 @@
 let healthList = JSON.parse(localStorage.getItem('healthList') || '[]');
 
 function escapeHtml(value) {
-  return value
+  return String(value || '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -122,40 +122,29 @@ function normalizeListValue(value) {
   return [];
 }
 
-let _guideButtonLockTimer = null;
-function lockSubmitButton(sendBtn) {
-  if (!sendBtn) return;
-
-  sendBtn.disabled = true;
-  sendBtn.textContent = '전송 중...';
-
-  if (_guideButtonLockTimer) {
-    clearTimeout(_guideButtonLockTimer);
-  }
-
-  _guideButtonLockTimer = setTimeout(() => {
-    sendBtn.disabled = false;
-    sendBtn.textContent = '서버에 전송';
-    _guideButtonLockTimer = null;
-  }, 5000);
-}
-
 async function submitGuideData() {
   const sendBtn = document.getElementById('guideSendBtn');
   const resultBox = document.getElementById('guideApiResult');
+
+  // 원래 버튼 텍스트 백업
+  const originalBtnText = sendBtn ? sendBtn.textContent : '조언 받기';
 
   if (!Array.isArray(healthList) || healthList.length === 0) {
     alert('건강 상태를 최소 1개 이상 입력해주세요.');
     return;
   }
 
-  if (sendBtn) lockSubmitButton(sendBtn);
-  if (resultBox) resultBox.textContent = '전송 중...';
+  // 1. 버튼 상태 업데이트 (전송 중 처리)
+  if (sendBtn) {
+    sendBtn.disabled = true;
+    sendBtn.textContent = '전송 중...';
+  }
+  if (resultBox) {
+    resultBox.textContent = '전송 중...';
+  }
 
   try {
-    healthList = filterAbnormalTagValues(healthList);
-    renderHealthTags();
-
+    // Client-side 필터링으로 기존 태그를 지우지 않고 전송용 복사본 생성
     const cleanedList = normalizeListValue(healthList);
 
     const requestBody = {
@@ -185,8 +174,11 @@ async function submitGuideData() {
       resultBox.innerHTML = escapeHtml(String(message)).replace(/\n/g, '<br>');
     }
 
-    // 서버가 비정상 항목 리스트를 반환하면 로컬 목록에서 제거
-    const abnormalList = Array.isArray(data.abnormalList) ? data.abnormalList.map((i) => String(i).trim()).filter(Boolean) : [];
+    // 2. 서버 검증 응답 이후에만 비정상 항목 삭제
+    const abnormalList = Array.isArray(data.abnormalList)
+      ? data.abnormalList.map((i) => String(i).trim()).filter(Boolean)
+      : [];
+
     if (abnormalList.length > 0) {
       healthList = healthList.filter((item) => !abnormalList.includes(String(item).trim()));
       renderHealthTags();
@@ -197,9 +189,10 @@ async function submitGuideData() {
     }
     console.error(error);
   } finally {
-    if (sendBtn && !_guideButtonLockTimer) {
+    // 3. 버튼 원래 상태 복원
+    if (sendBtn) {
       sendBtn.disabled = false;
-      sendBtn.textContent = '서버에 전송';
+      sendBtn.textContent = originalBtnText;
     }
   }
 }
