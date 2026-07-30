@@ -13,6 +13,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: '이미지와 기피물질 목록을 모두 제공해야 합니다.' });
     }
 
+    const normalizedAvoidList = Array.isArray(avoidList)
+      ? avoidList.map((item) => (typeof item === 'string' ? item.trim() : '')).filter(Boolean)
+      : [];
+
+    const abnormalAvoids = normalizedAvoidList.filter((item) => {
+      if (!item) return true;
+      if (item.length > 30) return true;
+      const hasValidCharacters = /[가-힣a-zA-Z]/.test(item);
+      return !hasValidCharacters;
+    });
+
     // 환경변수 GEMINI_API_KEY 읽기
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -20,7 +31,7 @@ export default async function handler(req, res) {
     const prompt = `다음 이미지에서 원재료 및 성분표 텍스트를 추출(OCR)하고, 사용자의 [기피물질 목록]과 대조하여 분석하라.
     
     [기피물질 목록]:
-    ${avoidList.join(', ')}
+    ${normalizedAvoidList.join(', ')}
     
     [작성 전 고려할 것]
     1. 입력된 기피 물질 목록에서 식품, 식품 첨가물, 특정 식품에 대한 서술에 해당하지 않는 것은 아예 작성 내용에 포함하지 말 것
@@ -33,7 +44,7 @@ export default async function handler(req, res) {
     4. '주의' 에 해당하는 항목은 '유의' 에 포함하지 않을 것.
     5. 만약 기피 성분에 해당하지만 그 뒤 0%, 0g 등 없다는 표시가 뒤따라오면 기피 성분에서 배제할 것.
     [기피물질 목록]:
-    ${avoidList.join(', ')}
+    ${normalizedAvoidList.join(', ')}
 
     결과는 반드시 지정된 JSON 구조로 작성할 것.
     만약 제공된 이미지가 성분표에 해당하지 않는다면, "ERROR:이것은 성분표가 아닙니다."를 출력할 것.
@@ -49,38 +60,46 @@ export default async function handler(req, res) {
 
     // Gemini API 호출 (Structured JSON Output 사용)
   const response = await ai.models.generateContent({
-      model: 'gemini-3.1-flash-lite',
-      contents: [prompt, imagePart],
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            extractedText: {
-              type: Type.STRING,
-              description: '이미지에서 추출한 전체 원재료/성분표 텍스트'
+  model: 'gemini-3.1-flash-lite',
+  contents: [prompt, imagePart],
+  config: {
+    responseMimeType: 'application/json',
+    responseSchema: {
+      type: Type.OBJECT,
+      properties: {
+        extractedText: {
+          type: Type.STRING,
+          description: '이미지에서 추출한 전체 원재료/성분표 텍스트'
+        },
+        detectedAvoids: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              ingredient: { type: Type.STRING, description: '이미지에서 발견된 성분명' },
+              matchedAvoid: { type: Type.STRING, description: '매칭된 기피물질 항목' },
+              reason: { type: Type.STRING, description: '검출 이유 또는 설명 (명백한 경우 빈값 "")' }
             },
-            detectedAvoids: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  ingredient: { type: Type.STRING, description: '이미지에서 발견된 성분명' },
-                  matchedAvoid: { type: Type.STRING, description: '매칭된 기피물질 항목' },
-                  reason: { type: Type.STRING, description: '검출 이유 또는 설명 (명백한 경우 빈값 "")' }
-                },
-                required: ['ingredient', 'matchedAvoid']
-              },
-              description: '발견된 전체 기피물질 목록'
-            }
+            required: ['ingredient', 'matchedAvoid']
           },
-          required: ['extractedText', 'detectedAvoids']
+          description: '발견된 전체 기피물질 목록'
+        },
+        abnormalAvoids: {
+          type: Type.ARRAY,
+          items: { type: Type.STRING },
+          description: '비정상적인 기피물질 항목 목록'
         }
-      }
-    });
 
+      },
+      required: ['extractedText', 'detectedAvoids', 'abnormalAvoids']
+    }
+  }
+});
     const result = JSON.parse(response.text);
-    return res.status(200).json(result);
+    return res.status(200).json({
+      ...result,
+      abnormalAvoids
+    });
 
   } catch (error) {
   console.error(error);

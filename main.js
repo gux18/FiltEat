@@ -154,6 +154,17 @@ async function analyzeImage() {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || '분석에 실패했습니다.');
 
+    const abnormalAvoids = Array.isArray(data.abnormalAvoids)
+      ? data.abnormalAvoids.map(item => String(item).trim()).filter(Boolean)
+      : (Array.isArray(data.invalidAvoids)
+        ? data.invalidAvoids.map(item => String(item).trim()).filter(Boolean)
+        : []);
+
+    if (abnormalAvoids.length > 0) {
+      avoidList = avoidList.filter((item) => !abnormalAvoids.includes(String(item).trim()));
+      renderTags();
+    }
+
     displayResults(data);
   } catch (err) {
     alert('오류: ' + err.message);
