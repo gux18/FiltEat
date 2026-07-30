@@ -1,114 +1,297 @@
 <!DOCTYPE html>
 <html lang="ko">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>원하는 식품과 피해야 할 성분</title>
-        <link rel="stylesheet" href="../style.css">
-        <!--<style>
-            .mt-4 {
-                margin-top: 16px;
-            }
-            .mt-3 {
-                margin-top: 12px;
-            }
-            .input-row {
-                display: flex;
-                gap: 8px;
-                flex-wrap: wrap;
-                align-items: center;
-            }
-            .input-row input {
-                flex: 1;
-                min-width: 220px;
-            }
-            .input-field {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-            }
-            .tag-list {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 8px;
-                min-height: 32px;
-            }
-            .tag-chip {
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                background: #eef2ff;
-                color: #4338ca;
-                border: 1px solid #c7d2fe;
-                border-radius: 999px;
-                padding: 7px 10px;
-                font-size: 13px;
-                font-weight: 600;
-            }
-            .tag-remove {
-                border: 0;
-                background: transparent;
-                color: inherit;
-                padding: 0;
-                font-size: 16px;
-                line-height: 1;
-                cursor: pointer;
-            }
-            .api-result {
-                margin-top: 12px;
-                padding: 12px 14px;
-                border: 1px solid #dbeafe;
-                border-radius: 12px;
-                background: #f8fbff;
-                color: #1e3a8a;
-                line-height: 1.6;
-                white-space: pre-wrap;
-            }
-        </style>-->
-    </head>
-    <body>
-        <div class="wrap">
-            <div class="card">
-                <h1>원하는 식품과 피해야 할 성분</h1>
-                <p class="muted">선호하는 식품과 주의할 성분을 입력해 한눈에 관리해보세요.</p>
-            </div>
+<head>
+  <meta charset="UTF-8">
 
-            <div class="card mt-4">
-                <h2>원하는 식품 입력</h2>
-                <form id="food-form" class="form-group" onsubmit="event.preventDefault(); addFoodItem();">
-                    <div class="input-field">
-                        <label for="foodInput">원하는 식품</label>
-                        <div class="input-row">
-                            <input type="text" id="foodInput" placeholder="예: 샐러드, 두부, 요거트">
-                            <button type="button" onclick="addFoodItem()" class="btn-primary">추가</button>
-                        </div>
-                    </div>
-                    <div id="foodTags" class="tag-list mt-3"></div>
-                </form>
-            </div>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-            <div class="card mt-4">
-                <h2>피해야 할 성분 입력</h2>
-                <form id="ingredient-form" class="form-group" onsubmit="event.preventDefault(); addIngredientItem();">
-                    <div class="input-field">
-                        <label for="ingredientInput">피해야 할 성분</label>
-                        <div class="input-row">
-                            <input type="text" id="ingredientInput" placeholder="예: 설탕, 밀, 계란">
-                            <button type="button" onclick="addIngredientItem()" class="btn-primary">추가</button>
-                        </div>
-                    </div>
-                    <div id="ingredientTags" class="tag-list mt-3"></div>
-                </form>
-            </div>
+  <title>대체 식품 추천</title>
 
-            <div class="card mt-4">
-                <h2>AI로 탐색</h2>
-                <p class="muted">입력한 식품과 성분 정보를 AI에 전달합니다.</p>
-                <button type="button" id="sendBtn">AI로 탐색</button>
-                <div id="apiResult" class="api-result">전송 전입니다.</div>
-            </div>
+  <link rel="stylesheet" href="../style.css">
+</head>
+
+<body class="alternative-page">
+  <main class="alternative-shell">
+
+    <!-- 홈페이지 이동 버튼 -->
+    <a href="../index.html" class="home-button">
+      <span aria-hidden="true">←</span>
+      홈페이지로
+    </a>
+
+    <!-- 상단 소개 -->
+    <header class="alternative-hero">
+      <div class="alternative-hero-content">
+        <span class="alternative-eyebrow">
+          ALTERNATIVE FOOD
+        </span>
+
+        <h1>
+          피해야 할 성분을 제외한<br>
+          대체 식품을 추천받으세요
+        </h1>
+
+        <p>
+          원하는 식품과 피하고 싶은 성분을 입력하면
+          AI가 조건에 맞는 대체 식품과 활용 방법을 안내합니다.
+        </p>
+
+        <div class="alternative-badges">
+          <span>맞춤 식품 추천</span>
+          <span>기피 성분 반영</span>
+          <span>AI 추천 결과</span>
         </div>
+      </div>
 
-        <script src="alter.js"></script>
-    </body>
+      <div class="alternative-hero-visual">
+        <div class="alternative-visual-card">
+          <div class="alternative-visual-icon">
+            A
+          </div>
+
+          <strong>맞춤형 대체 식품</strong>
+
+          <small>
+            원하는 조건을 입력하고<br>
+            AI 추천을 받아보세요.
+          </small>
+        </div>
+      </div>
+    </header>
+
+    <!-- 본문 -->
+    <div class="alternative-layout">
+
+      <!-- 왼쪽 주요 기능 -->
+      <div class="alternative-main-column">
+
+        <!-- 원하는 식품 입력 -->
+        <section class="alternative-card">
+          <div class="alternative-card-heading">
+            <span class="alternative-step">1</span>
+
+            <div>
+              <h2>원하는 식품 입력</h2>
+
+              <p>
+                먹고 싶은 식품이나 대체 식품을 찾고 싶은 메뉴를 입력하세요.
+              </p>
+            </div>
+          </div>
+
+          <form
+            id="food-form"
+            onsubmit="event.preventDefault(); addFoodItem();"
+          >
+            <label
+              for="foodInput"
+              class="alternative-input-label"
+            >
+              원하는 식품
+            </label>
+
+            <div class="alternative-input-row">
+              <input
+                type="text"
+                id="foodInput"
+                maxlength="30"
+                placeholder="예: 샐러드, 빵, 요거트, 파스타"
+              >
+
+              <button
+                type="button"
+                class="alternative-add-button"
+                onclick="addFoodItem()"
+              >
+                추가
+              </button>
+            </div>
+
+            <p class="alternative-input-help">
+              여러 식품을 하나씩 추가할 수 있습니다.
+            </p>
+
+            <div
+              id="foodTags"
+              class="tag-list alternative-tag-list"
+            ></div>
+          </form>
+        </section>
+
+        <!-- 피해야 할 성분 입력 -->
+        <section class="alternative-card">
+          <div class="alternative-card-heading">
+            <span class="alternative-step">2</span>
+
+            <div>
+              <h2>피해야 할 성분 입력</h2>
+
+              <p>
+                알레르기나 개인적인 이유로 피해야 하는 성분을 입력하세요.
+              </p>
+            </div>
+          </div>
+
+          <form
+            id="ingredient-form"
+            onsubmit="event.preventDefault(); addIngredientItem();"
+          >
+            <label
+              for="ingredientInput"
+              class="alternative-input-label"
+            >
+              피해야 할 성분
+            </label>
+
+            <div class="alternative-input-row">
+              <input
+                type="text"
+                id="ingredientInput"
+                maxlength="30"
+                placeholder="예: 우유, 밀, 계란, 설탕"
+              >
+
+              <button
+                type="button"
+                class="alternative-add-button"
+                onclick="addIngredientItem()"
+              >
+                추가
+              </button>
+            </div>
+
+            <p class="alternative-input-help">
+              정확한 추천을 위해 식품 포장지의 성분명을 참고하세요.
+            </p>
+
+            <div
+              id="ingredientTags"
+              class="tag-list alternative-tag-list"
+            ></div>
+          </form>
+        </section>
+
+        <!-- AI 추천 -->
+        <section class="alternative-card alternative-ai-card">
+          <div class="alternative-card-heading">
+            <span class="alternative-step">3</span>
+
+            <div>
+              <h2>AI 대체 식품 추천</h2>
+
+              <p>
+                입력한 식품과 기피 성분을 바탕으로 추천 결과를 생성합니다.
+              </p>
+            </div>
+          </div>
+
+          <div class="alternative-submit-area">
+            <div>
+              <strong>입력을 완료했나요?</strong>
+
+              <p>
+                원하는 식품 또는 피해야 할 성분을 최소 한 개 이상 입력하세요.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              id="sendBtn"
+              class="alternative-send-button"
+            >
+              AI로 대체 식품 찾기
+            </button>
+          </div>
+
+          <div class="alternative-result-heading">
+            <span>추천 결과</span>
+            <small>AI가 생성한 내용은 참고용입니다.</small>
+          </div>
+
+          <div
+            id="apiResult"
+            class="alternative-result"
+            aria-live="polite"
+          >
+            원하는 식품과 피해야 할 성분을 입력한 뒤 추천 버튼을 눌러주세요.
+          </div>
+        </section>
+
+      </div>
+
+      <!-- 오른쪽 안내 영역 -->
+      <aside class="alternative-side-column">
+
+        <section class="alternative-side-card">
+          <span class="alternative-side-number">1</span>
+
+          <div>
+            <h3>원하는 식품 등록</h3>
+
+            <p>
+              대체 식품을 찾고 싶은 음식이나 메뉴를 입력하세요.
+            </p>
+          </div>
+        </section>
+
+        <section class="alternative-side-card">
+          <span class="alternative-side-number">2</span>
+
+          <div>
+            <h3>기피 성분 등록</h3>
+
+            <p>
+              알레르기나 섭취 제한이 있는 성분을 입력하세요.
+            </p>
+          </div>
+        </section>
+
+        <section class="alternative-side-card">
+          <span class="alternative-side-number">3</span>
+
+          <div>
+            <h3>AI 추천 확인</h3>
+
+            <p>
+              추천된 식품과 조리 방법을 실제 제품 정보와 비교하세요.
+            </p>
+          </div>
+        </section>
+
+        <section class="alternative-example-card">
+          <span class="alternative-side-label">
+            EXAMPLE
+          </span>
+
+          <h3>입력 예시</h3>
+
+          <div class="alternative-example-row">
+            <span>원하는 식품</span>
+            <strong>요거트, 디저트</strong>
+          </div>
+
+          <div class="alternative-example-row">
+            <span>피해야 할 성분</span>
+            <strong>우유, 설탕</strong>
+          </div>
+        </section>
+
+        <section class="alternative-notice-card">
+          <strong>추천 결과 이용 안내</strong>
+
+          <p>
+            AI 추천 결과는 일반적인 참고 정보입니다. 식품을 구매하기 전
+            제품의 원재료명과 알레르기 표시를 직접 확인하세요.
+          </p>
+        </section>
+
+      </aside>
+    </div>
+  </main>
+
+  <script src="alter.js"></script>
+</body>
 </html>
