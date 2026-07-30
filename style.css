@@ -1546,3 +1546,44 @@ button.secondary:hover,
     padding: 17px 18px;
   }
 }
+
+.home-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  margin-bottom: 14px;
+  padding: 9px 13px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.9);
+  color: #475569;
+
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.home-button:hover {
+  transform: translateX(-2px);
+
+  border-color: #a5b4fc;
+  color: #4f46e5;
+
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.1);
+}
+
+.home-button span {
+  font-size: 16px;
+  line-height: 1;
+}
