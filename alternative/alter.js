@@ -11,7 +11,21 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+function isAbnormalTagValue(value) {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return true;
+  if (trimmed.length > 30) return true;
+  const hasValidCharacters = /[가-힣a-zA-Z]/.test(trimmed);
+  return !hasValidCharacters;
+}
+
+function filterAbnormalTagValues(values) {
+  return (Array.isArray(values) ? values : []).filter((item) => !isAbnormalTagValue(item));
+}
+
 function renderFoodTags() {
+  foodList = filterAbnormalTagValues(foodList);
+
   const container = document.getElementById('foodTags');
   if (!container) return;
 
@@ -33,6 +47,8 @@ function renderFoodTags() {
 }
 
 function renderIngredientTags() {
+  ingredientList = filterAbnormalTagValues(ingredientList);
+
   const container = document.getElementById('ingredientTags');
   if (!container) return;
 
@@ -63,13 +79,13 @@ function addFoodItem() {
     return;
   }
 
-  if (!foodList.includes(value)) {
-    foodList.push(value);
-  }
-
-  if (value.length > 30) {
+  if (isAbnormalTagValue(value)) {
     alert("30자 이내의 음식만 입력할 수 있습니다.");
     return;
+  }
+
+  if (!foodList.includes(value)) {
+    foodList.push(value);
   }
 
   input.value = '';
@@ -88,6 +104,11 @@ function addIngredientItem() {
   const value = input.value.trim();
   if (!value) {
     input.focus();
+    return;
+  }
+
+  if (isAbnormalTagValue(value)) {
+    alert("30자 이내의 성분만 입력할 수 있습니다.");
     return;
   }
 
@@ -154,11 +175,19 @@ async function submitAlternativeData() {
   }
 
   try {
+    foodList = filterAbnormalTagValues(foodList);
+    ingredientList = filterAbnormalTagValues(ingredientList);
+    renderFoodTags();
+    renderIngredientTags();
+
+    const cleanedFoodList = normalizeListValue(foodList);
+    const cleanedIngredientList = normalizeListValue(ingredientList);
+
     const requestBody = {
-      foodList: normalizeListValue(foodList),
-      ingredientList: normalizeListValue(ingredientList),
-      foodInputText: normalizeListValue(foodList).join(', '),
-      ingredientInputText: normalizeListValue(ingredientList).join(', ')
+      foodList: cleanedFoodList,
+      ingredientList: cleanedIngredientList,
+      foodInputText: cleanedFoodList.join(', '),
+      ingredientInputText: cleanedIngredientList.join(', ')
     };
 
     const response = await fetch('/api/alternative', {
@@ -182,6 +211,20 @@ async function submitAlternativeData() {
       const message = data.message || data.answer || '전송이 완료되었습니다.';
       const responseText = message;
       resultBox.innerHTML = escapeHtml(responseText).replace(/\n/g, '<br>');
+    }
+
+    const abnormalFoodList = Array.isArray(data.abnormalFoodList)
+      ? data.abnormalFoodList.map((item) => String(item).trim()).filter(Boolean)
+      : [];
+    const abnormalIngredientList = Array.isArray(data.abnormalIngredientList)
+      ? data.abnormalIngredientList.map((item) => String(item).trim()).filter(Boolean)
+      : [];
+
+    if (abnormalFoodList.length > 0 || abnormalIngredientList.length > 0) {
+      foodList = foodList.filter((item) => !abnormalFoodList.includes(String(item).trim()));
+      ingredientList = ingredientList.filter((item) => !abnormalIngredientList.includes(String(item).trim()));
+      renderFoodTags();
+      renderIngredientTags();
     }
   } catch (error) {
     if (resultBox) {
