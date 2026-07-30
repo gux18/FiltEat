@@ -35,7 +35,7 @@ async function addAvoidItem() {
   
   const isValid = await validateIngredient(val);
   if (!isValid) {
-    alert("음식 또는 식품 성분만 입력할 수 있습니다.");
+    alert("영어 제외 음식 또는 식품 성분만 입력할 수 있습니다.");
     return;
   }
   /*
