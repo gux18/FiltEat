@@ -151,6 +151,11 @@ async function submitAlternativeData() {
 window.addEventListener('DOMContentLoaded', () => {
   const foodInput = document.getElementById('foodInput');
   const ingredientInput = document.getElementById('ingredientInput');
+  const sendBtn = document.getElementById('sendBtn');
+
+  if (sendBtn) {
+    sendBtn.addEventListener('click', submitAlternativeData);
+  }
 
   if (foodInput) {
     foodInput.addEventListener('keydown', (event) => {
