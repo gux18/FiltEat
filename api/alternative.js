@@ -17,15 +17,28 @@ export default async function handler(req, res) {
       }
     }
 
-    const {
-      foodList = [],
-      ingredientList = [],
-      foodInputText = '',
-      ingredientInputText = ''
-    } = body;
+    const normalizeValues = (value) => {
+      if (Array.isArray(value)) {
+        return value.map((item) => String(item).trim()).filter(Boolean);
+      }
 
-    const normalizedFoodValues = [foodInputText, ...foodList].filter(Boolean);
-    const normalizedIngredientValues = [ingredientInputText, ...ingredientList].filter(Boolean);
+      if (typeof value === 'string') {
+        return value
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+
+      return [];
+    };
+
+    const rawFoodList = normalizeValues(body.foodList ?? body.foodItems ?? body.foodInputText ?? body.foodText);
+    const rawIngredientList = normalizeValues(body.ingredientList ?? body.ingredientItems ?? body.ingredientInputText ?? body.ingredientText);
+    const foodInputText = [body.foodInputText, body.foodText].find((value) => typeof value === 'string' && value.trim()) || '';
+    const ingredientInputText = [body.ingredientInputText, body.ingredientText].find((value) => typeof value === 'string' && value.trim()) || '';
+
+    const normalizedFoodValues = [...new Set([foodInputText, ...rawFoodList].filter(Boolean))];
+    const normalizedIngredientValues = [...new Set([ingredientInputText, ...rawIngredientList].filter(Boolean))];
 
     const desiredFood = normalizedFoodValues.join(', ') || '입력된 식품 없음';
     const avoidIngredients = normalizedIngredientValues.join(', ') || '없음';
@@ -46,7 +59,8 @@ export default async function handler(req, res) {
     return res.status(200).json({
       foodList: normalizedFoodValues,
       ingredientList: normalizedIngredientValues,
-      message: answer
+      message: answer,
+      answer
     });
   } catch (error) {
     console.error(error);
