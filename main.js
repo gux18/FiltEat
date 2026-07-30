@@ -57,7 +57,7 @@ async function validateIngredient(text) {
   if (!t || t.length > 30) return false;
 
 
-  return set.has(t.toLowerCase());
+  return true;
 }
 
 //
