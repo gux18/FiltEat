@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>원하는 식품과 피해야 할 성분</title>
+        <link rel="stylesheet" href="../style.css">
+        <style>
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+            }
+            .mt-4 {
+                margin-top: 16px;
+            }
+            .mt-3 {
+                margin-top: 12px;
+            }
+            .input-row {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+            .input-row input {
+                flex: 1;
+                min-width: 220px;
+            }
+            .input-field {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .tag-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                min-height: 32px;
+            }
+            .tag-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: #eef2ff;
+                color: #4338ca;
+                border: 1px solid #c7d2fe;
+                border-radius: 999px;
+                padding: 7px 10px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            .tag-remove {
+                border: 0;
+                background: transparent;
+                color: inherit;
+                padding: 0;
+                font-size: 16px;
+                line-height: 1;
+                cursor: pointer;
+            }
+            .btn-primary {
+                background: #2563eb;
+                color: white;
+                border: 0;
+                border-radius: 10px;
+                padding: 10px 14px;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="wrap">
+            <div class="card">
+                <h1>원하는 식품과 피해야 할 성분</h1>
+                <p class="muted">선호하는 식품과 주의할 성분을 입력해 한눈에 관리해보세요.</p>
+            </div>
+
+            <div class="card mt-4">
+                <h2>원하는 식품 입력</h2>
+                <form id="food-form" class="form-group" onsubmit="event.preventDefault(); addFoodItem();">
+                    <div class="input-field">
+                        <label for="foodInput">원하는 식품</label>
+                        <div class="input-row">
+                            <input type="text" id="foodInput" placeholder="예: 샐러드, 두부, 요거트">
+                            <button type="button" onclick="addFoodItem()" class="btn-primary">추가</button>
+                        </div>
+                    </div>
+                    <div id="foodTags" class="tag-list mt-3"></div>
+                </form>
+            </div>
+
+            <div class="card mt-4">
+                <h2>피해야 할 성분 입력</h2>
+                <form id="ingredient-form" class="form-group" onsubmit="event.preventDefault(); addIngredientItem();">
+                    <div class="input-field">
+                        <label for="ingredientInput">피해야 할 성분</label>
+                        <div class="input-row">
+                            <input type="text" id="ingredientInput" placeholder="예: 설탕, 밀, 계란">
+                            <button type="button" onclick="addIngredientItem()" class="btn-primary">추가</button>
+                        </div>
+                    </div>
+                    <div id="ingredientTags" class="tag-list mt-3"></div>
+                </form>
+            </div>
+        </div>
+
+        <script src="alter.js"></script>
+    </body>
+</html>
