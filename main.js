@@ -120,7 +120,7 @@ function escapeHtml(text) {
 }
 
 function getIngredientSearchUrl(name) {
-  return `https://www.google.com/search?q=${encodeURIComponent(`${name} 유의사항`)}`;
+  return `https://www.google.com/search?q=${encodeURIComponent(`${name} 섭취 시 유의사항`)}`;
 }
 
 function renderTags() {
