@@ -275,7 +275,7 @@ async function submitGuideData() {
     }
 
     if (!response.ok) {
-      throw new Error(data.error || data.message || '전송에 실패했습니다.');
+      throw new Error('오류가 발생했습니다. 다른 모델로 시도해보세요.');
     }
 
     if (resultBox) {
