@@ -764,10 +764,11 @@ button.secondary:hover,
 
 .hero-banner {
   display: grid;
-  grid-template-columns: 1.4fr 0.8fr;
+  grid-template-columns: minmax(0, 1fr) 260px;
   align-items: center;
-  gap: 32px;
+  gap: 36px;
 
+  width: 100%;
   padding: 42px;
 
   border: 1px solid #dbeafe;
@@ -779,9 +780,25 @@ button.secondary:hover,
       rgba(129, 140, 248, 0.24),
       transparent 45%
     ),
-    linear-gradient(135deg, #ffffff 0%, #eef2ff 100%);
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #eef2ff 100%
+    );
 
   box-shadow: 0 18px 45px rgba(79, 70, 229, 0.1);
+}
+
+.hero-content {
+  min-width: 0;
+}
+
+.hero-graphic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 0;
 }
 
 .hero-label {
