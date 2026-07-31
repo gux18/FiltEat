@@ -62,9 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchInput =
     document.getElementById("boardSearchInput");
 
-  const clearSearchBtn =
-    document.getElementById("clearSearchBtn");
-
   const searchResultText =
     document.getElementById("searchResultText");
 
@@ -213,18 +210,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // ========================================
 
   if (searchInput) {
-    searchInput.addEventListener("input", () => {
+    const handleSearchChange = () => {
       renderMemos();
-    });
-  }
-
-  if (clearSearchBtn && searchInput) {
-    clearSearchBtn.addEventListener("click", () => {
-      searchInput.value = "";
-      searchInput.focus();
-
-      renderMemos();
-    });
+    };
+  
+    // 키보드로 입력하거나 지울 때
+    searchInput.addEventListener("input", handleSearchChange);
+  
+    // 검색창의 기본 × 버튼을 눌렀을 때
+    searchInput.addEventListener("search", handleSearchChange);
   }
 
 
