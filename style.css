@@ -3432,3 +3432,98 @@ button.secondary:hover,
 .board-search-box .search-clear-icon[hidden] {
   display: none;
 }
+
+/* ========================================
+   대체 식품 AI 모델 선택
+======================================== */
+
+.alternative-model-select-wrap {
+  margin-bottom: 18px;
+  padding: 16px;
+
+  border: 1px solid #d1fae5;
+  border-radius: 15px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(236, 253, 245, 0.82),
+      rgba(248, 250, 252, 0.95)
+    );
+}
+
+.alternative-model-select-wrap .alternative-input-label {
+  display: block;
+  margin-bottom: 8px;
+
+  color: #065f46;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.alternative-model-select {
+  width: 100%;
+  min-height: 44px;
+
+  padding: 10px 42px 10px 13px;
+
+  border: 1px solid #a7f3d0;
+  border-radius: 12px;
+
+  background-color: #ffffff;
+  color: #065f46;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+  outline: none;
+
+  /* 브라우저 기본 화살표 제거 */
+  appearance: none;
+  -webkit-appearance: none;
+
+  /* 오른쪽 화살표 아이콘 */
+  background-image:
+    linear-gradient(45deg, transparent 50%, #059669 50%),
+    linear-gradient(135deg, #059669 50%, transparent 50%);
+
+  background-position:
+    calc(100% - 18px) 18px,
+    calc(100% - 13px) 18px;
+
+  background-size:
+    5px 5px,
+    5px 5px;
+
+  background-repeat: no-repeat;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.alternative-model-select:hover {
+  border-color: #6ee7b7;
+  background-color: #fafffd;
+}
+
+.alternative-model-select:focus {
+  border-color: #34d399;
+  background-color: #ffffff;
+
+  box-shadow:
+    0 0 0 4px rgba(16, 185, 129, 0.11);
+}
+
+.alternative-model-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background-color: #f1f5f9;
+}
+
+.alternative-model-select option {
+  background: #ffffff;
+  color: #1e293b;
+}
