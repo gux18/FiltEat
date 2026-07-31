@@ -1,6 +1,35 @@
 let healthList = JSON.parse(localStorage.getItem('healthList') || '[]');
 let isGuideSubmitting = false;
 const GUIDE_SUBMIT_SNAPSHOT_KEY = 'food-avoidance-guide-submit-snapshot';
+const MODEL_STORAGE_KEY = 'food-avoidance-selected-model';
+const DEFAULT_MODEL = 'gemini-3-flash-preview';
+
+function getSelectedModel() {
+  const select = document.getElementById('guideModelSelect');
+  const value = select ? String(select.value || '').trim() : '';
+  return value || DEFAULT_MODEL;
+}
+
+function persistSelectedModel(modelName) {
+  const normalized = String(modelName || '').trim();
+  if (!normalized) return;
+  localStorage.setItem(MODEL_STORAGE_KEY, normalized);
+}
+
+function attachGuideModelSelector() {
+  const select = document.getElementById('guideModelSelect');
+  if (!select) return;
+
+  const savedModel = localStorage.getItem(MODEL_STORAGE_KEY);
+  if (savedModel) {
+    select.value = savedModel;
+  }
+
+  select.addEventListener('change', () => {
+    persistSelectedModel(select.value);
+    setGuideSubmitButtonState(document.getElementById('guideSendBtn'), false);
+  });
+}
 
 function getComparableHealthList(values) {
   return [...new Set((Array.isArray(values) ? values : [])
@@ -10,7 +39,8 @@ function getComparableHealthList(values) {
 
 function getCurrentGuideSubmitPayload() {
   return {
-    healthList: getComparableHealthList(healthList)
+    healthList: getComparableHealthList(healthList),
+    model: getSelectedModel()
   };
 }
 
@@ -119,6 +149,8 @@ window.addEventListener('DOMContentLoaded', () => {
     sendBtn.addEventListener('click', submitGuideData);
   }
 
+  attachGuideModelSelector();
+
   if (input) {
     input.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
@@ -225,7 +257,8 @@ async function submitGuideData() {
 
     const requestBody = {
       guideList: cleanedList,
-      guideInputText: cleanedList.join(', ')
+      guideInputText: cleanedList.join(', '),
+      model: getSelectedModel()
     };
 
     const response = await fetch('/api/avoid', {
