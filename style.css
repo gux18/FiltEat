@@ -3066,3 +3066,113 @@ button.secondary:hover,
   font-size: 14px;
   line-height: 1;
 }
+
+/* ========================================
+   게시판 검색
+======================================== */
+
+.board-search-area {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  margin-bottom: 7px;
+}
+
+.board-search-box {
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  min-height: 44px;
+  padding: 0 13px;
+
+  border: 1px solid #dbe3ef;
+  border-radius: 13px;
+
+  background: #ffffff;
+  color: #94a3b8;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.board-search-box:focus-within {
+  border-color: #818cf8;
+
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.board-search-box svg {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+
+  stroke-width: 1.8;
+}
+
+.board-search-box input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 0;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+  color: #1e293b;
+
+  font-size: 13px;
+}
+
+.board-search-box input::placeholder {
+  color: #94a3b8;
+}
+
+.board-page #clearSearchBtn {
+  min-height: 44px;
+  padding: 10px 13px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  background: #f8fafc;
+  color: #64748b;
+
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.board-page #clearSearchBtn:hover {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.board-search-result {
+  min-height: 20px;
+  margin: 0 0 12px;
+
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 550px) {
+  .board-search-area {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .board-page #clearSearchBtn {
+    width: 100%;
+  }
+}
