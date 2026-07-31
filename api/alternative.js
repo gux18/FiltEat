@@ -42,6 +42,10 @@ export default async function handler(req, res) {
 
     const filterAbnormalValues = (values) => values.filter((value) => !isAbnormalValue(value));
 
+    const requestedModel = typeof body.model === 'string' && body.model.trim()
+      ? body.model.trim()
+      : 'gemini-3.1-flash-lite';
+
     const rawFoodList = normalizeValues(body.foodList ?? body.foodItems ?? body.foodInputText ?? body.foodText);
     const rawIngredientList = normalizeValues(body.ingredientList ?? body.ingredientItems ?? body.ingredientInputText ?? body.ingredientText);
     const foodInputText = [body.foodInputText, body.foodText].find((value) => typeof value === 'string' && value.trim()) || '';
@@ -66,7 +70,7 @@ export default async function handler(req, res) {
     ].join('\n');
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.1-flash-lite',
+      model: requestedModel,
       contents: prompt,
       config: {
         systemInstruction
