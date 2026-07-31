@@ -36,11 +36,11 @@ export default async function handler(req, res) {
       const trimmed = String(value || '').trim();
       if (!trimmed) return true;
       if (trimmed.length > 30) return true;
-      const hasValidCharacters = /[가-힣a-zA-Z]/.test(trimmed);
-      return !hasValidCharacters;
+      return false;
     };
 
     const filterAbnormalValues = (values) => values.filter((value) => !isAbnormalValue(value));
+    const getAbnormalValues = (values) => values.filter((value) => isAbnormalValue(value));
 
     const requestedModel = typeof body.model === 'string' && body.model.trim()
       ? body.model.trim()
@@ -51,8 +51,8 @@ export default async function handler(req, res) {
     const foodInputText = [body.foodInputText, body.foodText].find((value) => typeof value === 'string' && value.trim()) || '';
     const ingredientInputText = [body.ingredientInputText, body.ingredientText].find((value) => typeof value === 'string' && value.trim()) || '';
 
-    const abnormalFoodList = filterAbnormalValues(rawFoodList.filter(Boolean));
-    const abnormalIngredientList = filterAbnormalValues(rawIngredientList.filter(Boolean));
+    const abnormalFoodList = getAbnormalValues(rawFoodList.filter(Boolean));
+    const abnormalIngredientList = getAbnormalValues(rawIngredientList.filter(Boolean));
     const normalizedFoodValues = [...new Set(filterAbnormalValues([foodInputText, ...rawFoodList].filter(Boolean)))];
     const normalizedIngredientValues = [...new Set(filterAbnormalValues([ingredientInputText, ...rawIngredientList].filter(Boolean)))];
 
