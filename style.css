@@ -3147,6 +3147,111 @@ button.secondary:hover,
 }
 
 /* ========================================
+   건강 가이드 AI 모델 선택
+======================================== */
+
+.guide-model-select-wrap {
+  margin-top: 14px;
+  margin-bottom: 18px;
+  padding: 16px;
+
+  border: 1px solid #c7d2fe;
+  border-radius: 15px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(238, 242, 255, 0.88),
+      rgba(248, 250, 252, 0.96)
+    );
+}
+
+/* 기존 guide-input-label 스타일을 조금 보완 */
+.guide-model-select-wrap .guide-input-label {
+  display: block;
+  margin-bottom: 8px;
+
+  color: #3730a3;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.guide-model-select {
+  width: 100%;
+  min-height: 44px;
+
+  padding: 10px 42px 10px 13px;
+
+  border: 1px solid #c7d2fe;
+  border-radius: 12px;
+
+  background-color: #ffffff;
+  color: #312e81;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+  outline: none;
+
+  /* 기본 화살표 제거 */
+  appearance: none;
+  -webkit-appearance: none;
+
+  /* 사용자 지정 화살표 */
+  background-image:
+    linear-gradient(
+      45deg,
+      transparent 50%,
+      #6366f1 50%
+    ),
+    linear-gradient(
+      135deg,
+      #6366f1 50%,
+      transparent 50%
+    );
+
+  background-position:
+    calc(100% - 18px) 18px,
+    calc(100% - 13px) 18px;
+
+  background-size:
+    5px 5px,
+    5px 5px;
+
+  background-repeat: no-repeat;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.guide-model-select:hover {
+  border-color: #a5b4fc;
+  background-color: #fafaff;
+}
+
+.guide-model-select:focus {
+  border-color: #818cf8;
+  background-color: #ffffff;
+
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.12);
+}
+
+.guide-model-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background-color: #f1f5f9;
+}
+
+.guide-model-select option {
+  background: #ffffff;
+  color: #1e293b;
+}
+
+/* ========================================
    게시판 검색
 ======================================== */
 
