@@ -261,7 +261,7 @@ async function analyzeImage() {
     clearTimeout(timeoutId);
 
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || '분석에 실패했습니다.');
+    if (!response.ok) throw new Error('오류가 발생했습니다. 다른 모델로 시도해보세요.');
 
     const abnormalAvoids = Array.isArray(data.abnormalAvoids)
       ? data.abnormalAvoids.map(item => String(item).trim()).filter(Boolean)
