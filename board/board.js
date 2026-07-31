@@ -299,10 +299,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   function updateSearchInformation(keyword, resultCount) {
-    if (clearSearchBtn) {
-      clearSearchBtn.hidden = keyword.length === 0;
-    }
-
     if (!searchResultText) {
       return;
     }
