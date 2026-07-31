@@ -42,6 +42,9 @@ export default async function handler(req, res) {
 
 		const filterAbnormalValues = (values) => (Array.isArray(values) ? values.filter((value) => !isAbnormalValue(value)) : []);
 
+		const requestedModel = typeof body.model === 'string' && body.model.trim()
+			? body.model.trim()
+			: 'gemini-3-flash-preview';
 		const rawGuideList = normalizeValues(body.guideList ?? body.healthList ?? body.guideInputText ?? body.healthText);
 		const guideInputText = [body.guideInputText, body.healthText].find((v) => typeof v === 'string' && v.trim()) || '';
 
@@ -58,7 +61,7 @@ export default async function handler(req, res) {
 		].join('\n');
 
 		const response = await ai.models.generateContent({
-			model: 'gemini-3-flash-preview',
+			model: requestedModel,
 			contents: prompt,
 			config: {
 				systemInstruction
