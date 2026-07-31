@@ -849,3 +849,23 @@ document.addEventListener("DOMContentLoaded", () => {
     clearPostSubscriptions();
   });
 });
+
+const clearSearchIcon =
+  document.getElementById("clearSearchIcon");
+
+if (searchInput && clearSearchIcon) {
+  searchInput.addEventListener("input", () => {
+    clearSearchIcon.hidden =
+      searchInput.value.length === 0;
+
+    renderMemos();
+  });
+
+  clearSearchIcon.addEventListener("click", () => {
+    searchInput.value = "";
+    clearSearchIcon.hidden = true;
+
+    renderMemos();
+    searchInput.focus();
+  });
+}
