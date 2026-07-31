@@ -81,8 +81,7 @@ function isAbnormalTagValue(value) {
   const trimmed = String(value || '').trim();
   if (!trimmed) return true;
   if (trimmed.length > 30) return true;
-  const hasValidCharacters = /[가-힣a-zA-Z]/.test(trimmed);
-  return !hasValidCharacters;
+  return false;
 }
 
 function filterAbnormalTagValues(values) {
