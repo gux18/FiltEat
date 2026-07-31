@@ -2,6 +2,35 @@ let foodList = JSON.parse(localStorage.getItem('foodList') || '[]');
 let ingredientList = JSON.parse(localStorage.getItem('ingredientList') || '[]');
 let buttonLockTimer = null;
 const ALTERNATIVE_SUBMIT_SNAPSHOT_KEY = 'food-avoidance-alternative-submit-snapshot';
+const MODEL_STORAGE_KEY = 'food-avoidance-selected-model';
+const DEFAULT_MODEL = 'gemini-3.1-flash-lite';
+
+function getSelectedModel() {
+  const select = document.getElementById('alternativeModelSelect');
+  const value = select ? String(select.value || '').trim() : '';
+  return value || DEFAULT_MODEL;
+}
+
+function persistSelectedModel(modelName) {
+  const normalized = String(modelName || '').trim();
+  if (!normalized) return;
+  localStorage.setItem(MODEL_STORAGE_KEY, normalized);
+}
+
+function attachAlternativeModelSelector() {
+  const select = document.getElementById('alternativeModelSelect');
+  if (!select) return;
+
+  const savedModel = localStorage.getItem(MODEL_STORAGE_KEY);
+  if (savedModel) {
+    select.value = savedModel;
+  }
+
+  select.addEventListener('change', () => {
+    persistSelectedModel(select.value);
+    setSubmitButtonState(document.getElementById('sendBtn'), false);
+  });
+}
 
 function getComparableList(values) {
   return [...new Set((Array.isArray(values) ? values : [])
@@ -12,7 +41,8 @@ function getComparableList(values) {
 function getCurrentAlternativeSubmitPayload() {
   return {
     foodList: getComparableList(foodList),
-    ingredientList: getComparableList(ingredientList)
+    ingredientList: getComparableList(ingredientList),
+    model: getSelectedModel()
   };
 }
 
@@ -244,7 +274,8 @@ async function submitAlternativeData() {
       foodList: cleanedFoodList,
       ingredientList: cleanedIngredientList,
       foodInputText: cleanedFoodList.join(', '),
-      ingredientInputText: cleanedIngredientList.join(', ')
+      ingredientInputText: cleanedIngredientList.join(', '),
+      model: getSelectedModel()
     };
 
     const response = await fetch('/api/alternative', {
@@ -302,6 +333,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const foodInput = document.getElementById('foodInput');
   const ingredientInput = document.getElementById('ingredientInput');
   const sendBtn = document.getElementById('sendBtn');
+
+  attachAlternativeModelSelector();
 
   if (sendBtn) {
     sendBtn.addEventListener('click', submitAlternativeData);
