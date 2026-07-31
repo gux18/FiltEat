@@ -41,14 +41,16 @@ export default async function handler(req, res) {
 		};
 
 		const filterAbnormalValues = (values) => (Array.isArray(values) ? values.filter((value) => !isAbnormalValue(value)) : []);
+		const getAbnormalValues = (values) => (Array.isArray(values) ? values.filter((value) => isAbnormalValue(value)) : []);
 
 		const requestedModel = typeof body.model === 'string' && body.model.trim()
 			? body.model.trim()
 			: 'gemini-3-flash-preview';
+
 		const rawGuideList = normalizeValues(body.guideList ?? body.healthList ?? body.guideInputText ?? body.healthText);
 		const guideInputText = [body.guideInputText, body.healthText].find((v) => typeof v === 'string' && v.trim()) || '';
 
-		const abnormalList = filterAbnormalValues(rawGuideList.filter(Boolean));
+		const abnormalList = getAbnormalValues(rawGuideList.filter(Boolean));
 		const normalizedGuideValues = [...new Set(filterAbnormalValues([guideInputText, ...rawGuideList].filter(Boolean)))];
 
 		const conditions = normalizedGuideValues.join(', ') || '입력된 건강 상태 없음';
