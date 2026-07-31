@@ -262,8 +262,10 @@ async function submitGuideData() {
     saveGuideSubmitSnapshot(getCurrentGuideSubmitPayload());
   } catch (error) {
     if (resultBox) {
-      resultBox.textContent = getErrorMessage(error, null);
+      resultBox.textContent = '';
     }
+
+    alert('죄송합니다. 잠시 후 다시 시도해 주세요.');
     console.error(error);
   } finally {
     isGuideSubmitting = false;
