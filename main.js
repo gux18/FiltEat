@@ -119,6 +119,10 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+function getIngredientSearchUrl(name) {
+  return `https://www.google.com/search?q=${encodeURIComponent(`${name} 유의사항`)}`;
+}
+
 function renderTags() {
   const container = document.getElementById('avoidTags');
   if (!container) return;
@@ -332,9 +336,21 @@ function displayResults(data) {
             <span>⚠️ WARNING: 주의 기피물질 ${warningList.length}건이 발견되었습니다!</span>
           </div>
           <ul class="list-disc list-inside text-sm space-y-1">
-            ${warningList.map(item => `
-              <li><strong>${escapeHtml(item.ingredient)}</strong> (연관 성분: ${escapeHtml(item.matchedAvoid)}${item.reason ? ` - 사유: ${escapeHtml(item.reason)}` : ''})</li>
-            `).join('')}
+            ${warningList.map(item => {
+              const ingredient = escapeHtml(item.ingredient || '');
+              const matchedAvoid = escapeHtml(item.matchedAvoid || '');
+              const reason = item.reason ? ` - 사유: ${escapeHtml(item.reason)}` : '';
+              const searchUrl = getIngredientSearchUrl(item.ingredient || '');
+
+              return `
+                <li>
+                  <a href="${searchUrl}" target="_blank" rel="noopener noreferrer" class="underline font-semibold">
+                    ${ingredient}
+                  </a>
+                  (연관 성분: ${matchedAvoid}${reason})
+                </li>
+              `;
+            }).join('')}
           </ul>
         </div>
       `;
@@ -347,9 +363,21 @@ function displayResults(data) {
             <span>⚡ CAUTION: 유의 항목 ${cautionList.length}건이 발견되었습니다.</span>
           </div>
           <ul class="list-disc list-inside text-sm space-y-1">
-            ${cautionList.map(item => `
-              <li><strong>${escapeHtml(item.ingredient)}</strong> (연관 성분: ${escapeHtml(item.matchedAvoid)}${item.reason ? ` - 사유: ${escapeHtml(item.reason)}` : ''})</li>
-            `).join('')}
+            ${cautionList.map(item => {
+              const ingredient = escapeHtml(item.ingredient || '');
+              const matchedAvoid = escapeHtml(item.matchedAvoid || '');
+              const reason = item.reason ? ` - 사유: ${escapeHtml(item.reason)}` : '';
+              const searchUrl = getIngredientSearchUrl(item.ingredient || '');
+
+              return `
+                <li>
+                  <a href="${searchUrl}" target="_blank" rel="noopener noreferrer" class="underline font-semibold">
+                    ${ingredient}
+                  </a>
+                  (연관 성분: ${matchedAvoid}${reason})
+                </li>
+              `;
+            }).join('')}
           </ul>
         </div>
       `;
