@@ -1,6 +1,5 @@
 let healthList = JSON.parse(localStorage.getItem('healthList') || '[]');
 let isGuideSubmitting = false;
-let guideButtonLockTimer = null;
 const GUIDE_SUBMIT_SNAPSHOT_KEY = 'food-avoidance-guide-submit-snapshot';
 
 function getComparableHealthList(values) {
@@ -183,16 +182,6 @@ function lockGuideSubmitButton(sendBtn) {
   if (!sendBtn) return;
 
   setGuideSubmitButtonState(sendBtn, true);
-
-  if (guideButtonLockTimer) {
-    clearTimeout(guideButtonLockTimer);
-  }
-
-  guideButtonLockTimer = setTimeout(() => {
-    setGuideSubmitButtonState(sendBtn, false);
-    guideButtonLockTimer = null;
-    isGuideSubmitting = false;
-  }, 5000);
 }
 
 function getErrorMessage(error, data) {
@@ -225,14 +214,13 @@ async function submitGuideData() {
   }
 
   isGuideSubmitting = true;
-
   lockGuideSubmitButton(sendBtn);
+
   if (resultBox) {
     resultBox.textContent = '전송 중...';
   }
 
   try {
-    // Client-side 필터링으로 기존 태그를 지우지 않고 전송용 복사본 생성
     const cleanedList = normalizeListValue(healthList);
 
     const requestBody = {
@@ -262,9 +250,8 @@ async function submitGuideData() {
       resultBox.innerHTML = escapeHtml(String(message)).replace(/\n/g, '<br>');
     }
 
-    // 2. 서버 검증 응답 이후에만 비정상 항목 삭제
     const abnormalList = Array.isArray(data.abnormalList)
-      ? data.abnormalList.map((i) => String(i).trim()).filter(Boolean)
+      ? data.abnormalList.map((item) => String(item).trim()).filter(Boolean)
       : [];
 
     if (abnormalList.length > 0) {
@@ -273,11 +260,13 @@ async function submitGuideData() {
     }
 
     saveGuideSubmitSnapshot(getCurrentGuideSubmitPayload());
-    setGuideSubmitButtonState(sendBtn, false);
   } catch (error) {
     if (resultBox) {
       resultBox.textContent = getErrorMessage(error, null);
     }
     console.error(error);
+  } finally {
+    isGuideSubmitting = false;
+    setGuideSubmitButtonState(sendBtn, false);
   }
 }
