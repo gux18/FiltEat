@@ -4,6 +4,35 @@ let selectedMimeType = null;
 let analyzeButtonLockTimer = null;
 let analyzeButtonOriginalHtml = '';
 const ANALYZE_SUBMIT_SNAPSHOT_KEY = 'food-avoidance-main-submit-snapshot';
+const MODEL_STORAGE_KEY = 'food-avoidance-selected-model';
+const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
+
+function getSelectedModel() {
+  const select = document.getElementById('modelSelect');
+  const value = select ? String(select.value || '').trim() : '';
+  return value || DEFAULT_MODEL;
+}
+
+function persistSelectedModel(modelName) {
+  const normalized = String(modelName || '').trim();
+  if (!normalized) return;
+  localStorage.setItem(MODEL_STORAGE_KEY, normalized);
+}
+
+function attachModelSelector(selectorId) {
+  const select = document.getElementById(selectorId);
+  if (!select) return;
+
+  const savedModel = localStorage.getItem(MODEL_STORAGE_KEY);
+  if (savedModel) {
+    select.value = savedModel;
+  }
+
+  select.addEventListener('change', () => {
+    persistSelectedModel(select.value);
+    syncAnalyzeButtonState();
+  });
+}
 
 function getComparableAvoidList(values) {
   return [...new Set((Array.isArray(values) ? values : [])
@@ -15,7 +44,8 @@ function getCurrentAnalyzePayload() {
   return {
     avoidList: getComparableAvoidList(avoidList),
     selectedBase64: selectedBase64 || null,
-    selectedMimeType: selectedMimeType || null
+    selectedMimeType: selectedMimeType || null,
+    model: getSelectedModel()
   };
 }
 
@@ -68,6 +98,7 @@ function syncAnalyzeButtonState() {
 }
 
 // 페이지 로드 시 태그 렌더링
+attachModelSelector('modelSelect');
 renderTags();
 
 function escapeHtml(text) {
@@ -221,7 +252,8 @@ async function analyzeImage() {
       body: JSON.stringify({
         imageBase64: selectedBase64,
         mimeType: selectedMimeType,
-        avoidList: avoidList
+        avoidList: avoidList,
+        model: getSelectedModel()
       })
     });
 
