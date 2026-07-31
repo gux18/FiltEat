@@ -109,17 +109,6 @@
         <p>새 글이 등록되면 자동으로 반영됩니다.</p>
       </div>
       <div class="board-search-area">
-        <label
-          for="boardSearchInput"
-          class="board-search-box"
-        >
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-          >
-            <circle cx="11" cy="11" r="7"></circle>
         <div class="board-search-box">
           <svg
             aria-hidden="true"
@@ -130,25 +119,22 @@
             <circle cx="11" cy="11" r="7"></circle>
             <path d="m20 20-3.5-3.5"></path>
           </svg>
-        
+      
           <input
-            type="text"
+            type="search"
             id="boardSearchInput"
             maxlength="50"
             placeholder="게시글 내용 검색"
             autocomplete="off"
           >
-        
-          <button
-            type="button"
-            id="clearSearchIcon"
-            class="search-clear-icon"
-            aria-label="검색어 지우기"
-            hidden
-          >
-            ×
-          </button>
         </div>
+      </div>
+      
+      <p
+        id="searchResultText"
+        class="board-search-result"
+        aria-live="polite"
+      ></p>
       
       <p
         id="searchResultText"
