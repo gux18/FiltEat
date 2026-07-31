@@ -40,10 +40,17 @@ function getComparableAvoidList(values) {
     .filter(Boolean))].sort();
 }
 
+// 이미지 식별용 경량 지문(Fingerprint) 생성
+function getImageFingerprint(base64) {
+  if (!base64) return null;
+  // 문자열 전체를 저장하는 대신 길이와 앞/뒤 30자 조합으로 경량 식별자 생성
+  return `${base64.length}_${base64.slice(0, 30)}_${base64.slice(-30)}`;
+}
+
 function getCurrentAnalyzePayload() {
   return {
     avoidList: getComparableAvoidList(avoidList),
-    selectedBase64: selectedBase64 || null,
+    imageFingerprint: getImageFingerprint(selectedBase64),
     selectedMimeType: selectedMimeType || null,
     model: getSelectedModel()
   };
@@ -68,6 +75,7 @@ function saveAnalyzeSubmitSnapshot(payload) {
 }
 
 function isAnalyzePayloadSameAsSnapshot(payload, snapshot) {
+  if (!payload || !snapshot) return false;
   return JSON.stringify(payload) === JSON.stringify(snapshot);
 }
 
@@ -93,26 +101,27 @@ function syncAnalyzeButtonState() {
 
   const label = btn.querySelector('span');
   if (label) {
-    label.textContent = hasSameSnapshot ? '저장된 내용과 같아 분석할 수 없습니다' : 'AI로 기피물질 검사하기';
+    if (hasSameSnapshot) {
+      label.textContent = '이미 분석 완료된 항목입니다';
+    } else if (!selectedBase64) {
+      label.textContent = '이미지를 선택해주세요';
+    } else if (avoidList.length === 0) {
+      label.textContent = '기피물질을 최소 1개 이상 추가해주세요';
+    } else {
+      label.textContent = 'AI로 기피물질 검사하기';
+    }
   }
 }
 
-// 페이지 로드 시 태그 렌더링
-attachModelSelector('modelSelect');
-renderTags();
-
 function escapeHtml(text) {
   const div = document.createElement('div');
-  div.innerText = text;
+  div.textContent = text;
   return div.innerHTML;
 }
 
 function renderTags() {
   const container = document.getElementById('avoidTags');
-  
-  if (!container) {
-    return;
-  }
+  if (!container) return;
   
   container.innerHTML = avoidList.map((item, index) => `
     <span class="inline-flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-200 text-xs px-3 py-1.5 rounded-full font-medium">
@@ -120,10 +129,11 @@ function renderTags() {
       <button onclick="removeAvoidItem(${index})" class="hover:text-rose-800 font-bold ml-1">×</button>
     </span>
   `).join('');
+  
   localStorage.setItem('avoidList', JSON.stringify(avoidList));
   syncAnalyzeButtonState();
 }
-// 기피 재료 검사
+
 async function addAvoidItem() {
   const input = document.getElementById('avoidInput');
   const val = input.value.trim();
@@ -149,12 +159,8 @@ async function addAvoidItem() {
 async function validateIngredient(text) {
   const t = (text || '').trim();
   if (!t || t.length > 30) return false;
-
-
   return true;
 }
-
-//
 
 function removeAvoidItem(index) {
   avoidList.splice(index, 1);
@@ -177,48 +183,41 @@ function lockAnalyzeButton(btn) {
     </svg>
     <span>분석 중...</span>
   `;
+}
 
-  if (analyzeButtonLockTimer) {
-    clearTimeout(analyzeButtonLockTimer);
-  }
-
-  analyzeButtonLockTimer = setTimeout(() => {
-    btn.dataset.analyzeState = 'ready';
-    btn.disabled = false;
-    btn.innerHTML = analyzeButtonOriginalHtml;
-    analyzeButtonLockTimer = null;
-    syncAnalyzeButtonState();
-  }, 5000);
+function unlockAnalyzeButton(btn) {
+  if (!btn) return;
+  btn.dataset.analyzeState = 'ready';
+  syncAnalyzeButtonState();
 }
 
 function handleImageSelect(event) {
   const file = event.target.files[0];
   if (!file) return;
-  // 이미지 파일만 업로드 하도록
+
   if (!file.type.startsWith("image/")) {
     alert("이미지 파일만 업로드할 수 있습니다.");
     event.target.value = "";
     return;
   }
-  //
+
   selectedMimeType = file.type;
   const reader = new FileReader();
   reader.onload = function (e) {
     const fullBase64 = e.target.result;
-    selectedBase64 = fullBase64.split(',')[1]; // Pure Base64만 추출
+    selectedBase64 = fullBase64.split(',')[1];
 
     document.getElementById('imagePreview').src = fullBase64;
     document.getElementById('previewContainer').classList.remove('hidden');
     document.getElementById('resultSection').classList.add('hidden');
+    
+    // 이미지 변경 시 스냅샷 상태 갱신
     syncAnalyzeButtonState();
   };
   reader.readAsDataURL(file);
 }
 
 async function analyzeImage() {
-  console.log('1. 분석 버튼 클릭됨');
-  console.log('현재 base64 데이터 상태:', selectedBase64 ? '존재함' : '없음(null)');
-
   if (!selectedBase64) return;
   if (avoidList.length === 0) {
     alert('최소 하나 이상의 기피물질을 등록해주세요.');
@@ -227,12 +226,12 @@ async function analyzeImage() {
 
   const payload = getCurrentAnalyzePayload();
   const snapshot = loadAnalyzeSubmitSnapshot();
+  
   if (snapshot && isAnalyzePayloadSameAsSnapshot(payload, snapshot)) {
+    alert('이미 동일한 조건으로 분석된 이미지입니다.');
     syncAnalyzeButtonState();
     return;
   }
-
-  console.log('2. fetch 요청 직전');
 
   const btn = document.getElementById('analyzeBtn');
   if (!btn) return;
@@ -240,15 +239,13 @@ async function analyzeImage() {
   lockAnalyzeButton(btn);
 
   try {
-    console.log('3. fetch 요청 시작');
-    //15초 타임아웃 설정
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     const response = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      signal: controller.signal, // 타임아웃 신호 연결
+      signal: controller.signal,
       body: JSON.stringify({
         imageBase64: selectedBase64,
         mimeType: selectedMimeType,
@@ -257,7 +254,7 @@ async function analyzeImage() {
       })
     });
 
-    console.log("4. fetch 응답 도착:", response);
+    clearTimeout(timeoutId);
 
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || '분석에 실패했습니다.');
@@ -273,11 +270,13 @@ async function analyzeImage() {
       renderTags();
     }
 
+    // 성공한 요청의 스냅샷 저장
     saveAnalyzeSubmitSnapshot(getCurrentAnalyzePayload());
-    syncAnalyzeButtonState();
     displayResults(data);
   } catch (err) {
     alert('오류: ' + err.message);
+  } finally {
+    unlockAnalyzeButton(btn);
   }
 }
 
@@ -294,37 +293,38 @@ function displayResults(data) {
   let rawText = data.extractedText || '텍스트를 추출하지 못했습니다.';
 
   if (data.extractedText) {
-    // 특수문자 정규식 이스케이프 함수
+    // 1. HTML Escape 처리로 XSS 방지
+    let safeText = escapeHtml(rawText);
+
     const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-    // 경고(Warning) 항목 -> 빨간색 하이라이트
+    // 2. 경고 항목 하이라이트
     warningList.forEach(item => {
       if (item.ingredient) {
-        const regex = new RegExp(escapeRegExp(item.ingredient), 'g');
-        rawText = rawText.replace(regex, `<mark class="bg-rose-100 text-rose-700 font-semibold px-1 rounded">${item.ingredient}</mark>`);
+        const escapedIng = escapeHtml(item.ingredient);
+        const regex = new RegExp(escapeRegExp(escapedIng), 'g');
+        safeText = safeText.replace(regex, `<mark class="bg-rose-100 text-rose-700 font-semibold px-1 rounded">${escapedIng}</mark>`);
       }
     });
 
-    // 유의(Caution) 항목 -> 노란/주황색 하이라이트
+    // 3. 유의 항목 하이라이트
     cautionList.forEach(item => {
       if (item.ingredient) {
-        const regex = new RegExp(escapeRegExp(item.ingredient), 'g');
-        rawText = rawText.replace(regex, `<mark class="bg-amber-100 text-amber-800 font-semibold px-1 rounded">${item.ingredient}</mark>`);
+        const escapedIng = escapeHtml(item.ingredient);
+        const regex = new RegExp(escapeRegExp(escapedIng), 'g');
+        safeText = safeText.replace(regex, `<mark class="bg-amber-100 text-amber-800 font-semibold px-1 rounded">${escapedIng}</mark>`);
       }
     });
 
-    extractedText.innerHTML = rawText;
+    extractedText.innerHTML = safeText;
   } else {
-    extractedText.innerText = rawText;
+    extractedText.textContent = rawText;
   }
 
-  /* 검출된 항목(주의/유의)이 있을 때와 없을 때를 구별 */
   if (warningList.length > 0 || cautionList.length > 0) {
-    /* alertBox 기본 테두리/여백 스타일 정리 및 htmlContent 변수 선언  */
     alertBox.className = "space-y-3";
     let htmlContent = '';
 
-    /*주의(Warning) 항목 출력 부분 */
     if (warningList.length > 0) {
       htmlContent += `
         <div class="p-4 rounded-xl border bg-rose-50 border-rose-200 text-rose-800 space-y-2">
@@ -332,9 +332,8 @@ function displayResults(data) {
             <span>⚠️ WARNING: 주의 기피물질 ${warningList.length}건이 발견되었습니다!</span>
           </div>
           <ul class="list-disc list-inside text-sm space-y-1">
-            ${/*data.detectedAvoids 전체가 아닌 warningList만 순회*/
-        warningList.map(item => `
-              <li><strong>${item.ingredient}</strong> (연관 성분: ${item.matchedAvoid}${item.reason ? ` - 사유: ${item.reason}` : ''})</li>
+            ${warningList.map(item => `
+              <li><strong>${escapeHtml(item.ingredient)}</strong> (연관 성분: ${escapeHtml(item.matchedAvoid)}${item.reason ? ` - 사유: ${escapeHtml(item.reason)}` : ''})</li>
             `).join('')}
           </ul>
         </div>
@@ -349,18 +348,15 @@ function displayResults(data) {
           </div>
           <ul class="list-disc list-inside text-sm space-y-1">
             ${cautionList.map(item => `
-              <li><strong>${item.ingredient}</strong> (연관 성분: ${item.matchedAvoid}${item.reason ? ` - 사유: ${item.reason}` : ''})</li>
+              <li><strong>${escapeHtml(item.ingredient)}</strong> (연관 성분: ${escapeHtml(item.matchedAvoid)}${item.reason ? ` - 사유: ${escapeHtml(item.reason)}` : ''})</li>
             `).join('')}
           </ul>
         </div>
       `;
     }
 
-    /*완성된 HTML을 alertBox 내부 요소에 할당 */
     alertBox.innerHTML = htmlContent;
-
   } else {
-
     alertBox.className = "p-4 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-800";
     alertBox.innerHTML = `
       <div class="font-bold flex items-center gap-2">
@@ -369,3 +365,7 @@ function displayResults(data) {
     `;
   }
 }
+
+// 초기화
+attachModelSelector('modelSelect');
+renderTags();
