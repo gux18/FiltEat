@@ -3402,3 +3402,33 @@ button.secondary:hover,
     width: 100%;
   }
 }
+
+.board-search-box .search-clear-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+
+  background: transparent;
+  color: #94a3b8;
+
+  font-size: 19px;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.board-search-box .search-clear-icon:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.board-search-box .search-clear-icon[hidden] {
+  display: none;
+}
