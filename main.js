@@ -397,3 +397,74 @@ function displayResults(data) {
 // 초기화
 attachModelSelector('modelSelect');
 renderTags();
+
+// ==========================================
+// 기피 물질 목록 JSON 다운로드 및 업로드
+// ==========================================
+
+// 1. 기피 물질 JSON 다운로드
+function downloadAvoidListJson() {
+  if (!avoidList || avoidList.length === 0) {
+    alert('다운로드할 기피물질이 없습니다.');
+    return;
+  }
+
+  // JSON 데이터 생성 (가독성을 위한 들여쓰기 적용)
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(avoidList, null, 2));
+  
+  // 가상의 앵커(a) 태그 생성 후 클릭 이벤트 트리거
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", `avoid_list_${new Date().toISOString().slice(0, 10)}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+}
+
+// 2. 기피 물질 JSON 업로드
+function uploadAvoidListJson(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // JSON 파일 여부 검증
+  if (file.type !== "application/json" && !file.name.endsWith('.json')) {
+    alert("JSON 파일만 업로드할 수 있습니다.");
+    event.target.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const parsedData = JSON.parse(e.target.result);
+
+      // 배열 형식 검증
+      if (!Array.isArray(parsedData)) {
+        throw new Error('올바른 기피물질 목록 형식(배열)이 아닙니다.');
+      }
+
+      // 문자열 데이터만 추출 및 정제 (30자 이하 조건 적용)
+      const validItems = parsedData
+        .map(item => String(item || '').trim())
+        .filter(item => item.length > 0 && item.length <= 30);
+
+      if (validItems.length === 0) {
+        alert('유효한 기피물질 데이터가 없습니다.');
+        return;
+      }
+
+      // 기존 목록과 중복 제거 후 합치기 (덮어쓰기를 원하시면 avoidList = [...new Set(validItems)] 로 변경)
+      avoidList = [...new Set([...avoidList, ...validItems])];
+
+      // UI 및 상태 갱신
+      renderTags();
+      alert(`총 ${validItems.length}개의 기피물질을 불러왔습니다.`);
+    } catch (err) {
+      alert('JSON 파일을 읽는 중 오류가 발생했습니다: ' + err.message);
+    } finally {
+      event.target.value = ""; // 동일 파일 다시 업로드 가능하도록 초기화
+    }
+  };
+
+  reader.readAsText(file);
+}
