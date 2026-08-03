@@ -361,3 +361,69 @@ window.addEventListener('DOMContentLoaded', () => {
   renderIngredientTags();
   setSubmitButtonState(document.getElementById('sendBtn'), false);
 });
+
+// ==========================================
+// 피해야 할 성분 JSON 다운로드 및 업로드
+// ==========================================
+
+// 1. 피해야 할 성분 JSON 다운로드
+function downloadIngredientListJson() {
+  if (!ingredientList || ingredientList.length === 0) {
+    alert('다운로드할 피해야 할 성분이 없습니다.');
+    return;
+  }
+
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(ingredientList, null, 2));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", `avoid_ingredients_${new Date().toISOString().slice(0, 10)}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+}
+
+// 2. 피해야 할 성분 JSON 업로드
+function uploadIngredientListJson(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (file.type !== "application/json" && !file.name.endsWith('.json')) {
+    alert("JSON 파일만 업로드할 수 있습니다.");
+    event.target.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const parsedData = JSON.parse(e.target.result);
+
+      if (!Array.isArray(parsedData)) {
+        throw new Error('올바른 성분 목록 형식(배열)이 아닙니다.');
+      }
+
+      // 문자열 데이터 추출 및 30자 이내 규칙 검증
+      const validItems = parsedData
+        .map(item => String(item || '').trim())
+        .filter(item => item.length > 0 && item.length <= 30);
+
+      if (validItems.length === 0) {
+        alert('유효한 성분 데이터가 없습니다.');
+        return;
+      }
+
+      // 기존 피해야 할 성분 목록과 합치고 중복 제거
+      ingredientList = [...new Set([...ingredientList, ...validItems])];
+
+      // UI 갱신
+      renderIngredientTags();
+      alert(`총 ${validItems.length}개의 피해야 할 성분을 불러왔습니다.`);
+    } catch (err) {
+      alert('JSON 파일을 읽는 중 오류가 발생했습니다: ' + err.message);
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  reader.readAsText(file);
+}
