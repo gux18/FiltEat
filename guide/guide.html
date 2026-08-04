@@ -135,6 +135,18 @@
               <span class="guide-ai-icon" aria-hidden="true">✦</span>
               <span>AI에게 조언 받기</span>
             </button>
+
+            <!-- 서버 추출 기피 성분 다운로드 영역 -->
+            <div id="downloadContainer" style="display: none; margin-top: 1rem; text-align: right;">
+              <button
+                type="button"
+                onclick="downloadServerAvoidIngredientsJson()"
+                class="guide-add-button"
+                style="padding: 0.4rem 0.8rem; font-size: 0.85rem; background-color: #f1f5f9; color: #334155;"
+              >
+                📥 추천 기피 성분 JSON 다운로드
+              </button>
+            </div>
             <div id="guideApiResult" class="guide-api-result" aria-live="polite"></div>
           </form>
         </section>

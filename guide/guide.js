@@ -225,9 +225,29 @@ function getErrorMessage(error, data) {
   return '오류가 발생했습니다. 서버 또는 네트워크를 확인해주세요.';
 }
 
+let serverAvoidIngredients = []; // 서버에서 전송받은 기피 성분 목록 변수
+
+// 서버에서 전달받은 기피 성분 목록 JSON 다운로드 함수
+function downloadServerAvoidIngredientsJson() {
+  if (!serverAvoidIngredients || serverAvoidIngredients.length === 0) {
+    alert('다운로드할 추천 기피 성분이 없습니다.');
+    return;
+  }
+
+  // 이전 페이지들과 동일하게 배열 구조 JSON으로 포맷팅
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(serverAvoidIngredients, null, 2));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", `recommended_avoid_ingredients_${new Date().toISOString().slice(0, 10)}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+}
+
 async function submitGuideData() {
   const sendBtn = document.getElementById('guideSendBtn');
   const resultBox = document.getElementById('guideApiResult');
+  const downloadContainer = document.getElementById('downloadContainer');
 
   if (isGuideSubmitting) {
     return;
@@ -250,6 +270,9 @@ async function submitGuideData() {
 
   if (resultBox) {
     resultBox.textContent = '전송 중...';
+  }
+  if (downloadContainer) {
+    downloadContainer.style.display = 'none';
   }
 
   try {
@@ -276,6 +299,16 @@ async function submitGuideData() {
 
     if (!response.ok) {
       throw new Error('오류가 발생했습니다. 다른 모델로 시도해보세요.');
+    }
+
+    // 서버 변수 수신 및 다운로드 버튼 노출
+    if (Array.isArray(data.avoidIngredients) && data.avoidIngredients.length > 0) {
+      serverAvoidIngredients = data.avoidIngredients;
+      if (downloadContainer) {
+        downloadContainer.style.display = 'block';
+      }
+    } else {
+      serverAvoidIngredients = [];
     }
 
     if (resultBox) {
@@ -305,3 +338,4 @@ async function submitGuideData() {
     setGuideSubmitButtonState(sendBtn, false);
   }
 }
+
