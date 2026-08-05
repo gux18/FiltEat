@@ -3,6 +3,7 @@ let selectedBase64 = null;
 let selectedMimeType = null;
 let analyzeButtonLockTimer = null;
 let analyzeButtonOriginalHtml = '';
+let pendingCorrectedAvoidList = [];
 const ANALYZE_SUBMIT_SNAPSHOT_KEY = 'food-avoidance-main-submit-snapshot';
 const MODEL_STORAGE_KEY = 'food-avoidance-selected-model';
 const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
@@ -121,6 +122,54 @@ function escapeHtml(text) {
 
 function getIngredientSearchUrl(name) {
   return `https://www.google.com/search?q=${encodeURIComponent(`${name} 섭취 시 유의사항`)}`;
+}
+
+function hideCorrectionPrompt() {
+  const container = document.getElementById('correctionPromptContainer');
+  if (container) {
+    container.classList.add('hidden');
+    container.innerHTML = '';
+  }
+  pendingCorrectedAvoidList = [];
+}
+
+function showCorrectionPrompt(correctedAvoidList) {
+  const container = document.getElementById('correctionPromptContainer');
+  if (!container) return;
+
+  pendingCorrectedAvoidList = getComparableAvoidList(correctedAvoidList);
+  if (pendingCorrectedAvoidList.length === 0) {
+    hideCorrectionPrompt();
+    return;
+  }
+
+  const submittedAvoidList = getComparableAvoidList(avoidList);
+  const hasDiff = JSON.stringify(submittedAvoidList) !== JSON.stringify(pendingCorrectedAvoidList);
+  if (!hasDiff) {
+    hideCorrectionPrompt();
+    return;
+  }
+
+  container.classList.remove('hidden');
+  container.innerHTML = `
+    <button
+      id="applyCorrectionBtn"
+      type="button"
+      class="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-xl font-semibold shadow-sm transition"
+    >
+      입력 보정을 적용하겠습니까?
+    </button>
+  `;
+
+  const button = document.getElementById('applyCorrectionBtn');
+  if (!button) return;
+
+  button.addEventListener('click', () => {
+    avoidList = [...pendingCorrectedAvoidList];
+    renderTags();
+    hideCorrectionPrompt();
+    alert('입력 보정이 적용되었습니다.');
+  });
 }
 
 function renderTags() {
@@ -263,15 +312,17 @@ async function analyzeImage() {
     const data = await response.json();
     if (!response.ok) throw new Error('오류가 발생했습니다. 다른 모델로 시도해보세요.');
 
-    const abnormalAvoids = Array.isArray(data.abnormalAvoids)
-      ? data.abnormalAvoids.map(item => String(item).trim()).filter(Boolean)
-      : (Array.isArray(data.invalidAvoids)
-        ? data.invalidAvoids.map(item => String(item).trim()).filter(Boolean)
-        : []);
+    const correctedAvoidList = Array.isArray(data.correctedAvoidList)
+      ? getComparableAvoidList(data.correctedAvoidList)
+      : [];
+    const submittedAvoidList = getComparableAvoidList(avoidList);
+    const hasCorrectionDiff = correctedAvoidList.length > 0
+      && JSON.stringify(submittedAvoidList) !== JSON.stringify(correctedAvoidList);
 
-    if (abnormalAvoids.length > 0) {
-      avoidList = avoidList.filter((item) => !abnormalAvoids.includes(String(item).trim()));
-      renderTags();
+    if (hasCorrectionDiff) {
+      showCorrectionPrompt(correctedAvoidList);
+    } else {
+      hideCorrectionPrompt();
     }
 
     // 성공한 요청의 스냅샷 저장
