@@ -155,9 +155,9 @@ function showCorrectionPrompt(correctedAvoidList) {
     <button
       id="applyCorrectionBtn"
       type="button"
-      class="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-xl font-semibold shadow-sm transition"
+      class="w-fit mx-auto inline-flex items-center justify-center bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition"
     >
-      입력 보정을 적용하겠습니까?
+      입력 보정 적용하기
     </button>
   `;
 
@@ -167,8 +167,12 @@ function showCorrectionPrompt(correctedAvoidList) {
   button.addEventListener('click', () => {
     avoidList = [...pendingCorrectedAvoidList];
     renderTags();
-    hideCorrectionPrompt();
-    alert('입력 보정이 적용되었습니다.');
+    button.textContent = '입력 보정 적용됨';
+    button.disabled = true;
+
+    window.setTimeout(() => {
+      hideCorrectionPrompt();
+    }, 1000);
   });
 }
 
