@@ -157,7 +157,11 @@ function showCorrectionPrompt(correctedAvoidList) {
       type="button"
       class="w-fit mx-auto inline-flex items-center justify-center bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition"
     >
-      입력 보정 적용하기
+      입력 보정 적용하기 (보정된 기피물질 : ${
+        Array.isArray(pendingCorrectedAvoidList)
+          ? pendingCorrectedAvoidList.join(', ')
+          : pendingCorrectedAvoidList
+      })
     </button>
   `;
 
