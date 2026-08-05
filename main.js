@@ -512,7 +512,7 @@ function uploadAvoidListJson(event) {
         return;
       }
 
-      // 기존 목록과 중복 제거 후 합치기 (덮어쓰기로 바꾸려면 avoidList = [...new Set(validItems)] 로 변경)
+      // 기존 목록과 중복 제거 후 합치기 (덮어쓰기를 원하시면 avoidList = [...new Set(validItems)] 로 변경)
       avoidList = [...new Set([...avoidList, ...validItems])];
 
       // UI 및 상태 갱신

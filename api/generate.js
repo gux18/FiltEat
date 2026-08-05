@@ -34,7 +34,8 @@ export default async function handler(req, res) {
     1. 반드시 correctedAvoidList 배열을 먼저 생성할 것
     2. correctedAvoidList에는 식품, 식품 첨가물, 특정 식품에 대한 서술에 해당하지 않는 항목을 제외한 항목만 포함할 것
     (예시: '쌀', '맛있는 밥', '달달한 것' 은 유지 / '휘발유', '비행기', '플라스틱' 은 제외)
-    3. correctedAvoidList는 탐색 기준으로 사용하되, 결과 JSON에 반드시 포함할 것
+    3. correctedAvoidList 항목은 길이 30자 이내의 한글/영문 문자열만 포함할 것
+    4. correctedAvoidList는 탐색 기준으로 사용하되, 결과 JSON에 반드시 포함할 것
     
     [분류 규칙]:
     1. 기피 성분에 명백하게 해당할 경우 '주의' 로 분류할 것

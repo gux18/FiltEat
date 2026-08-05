@@ -1,5 +1,6 @@
 let healthList = JSON.parse(localStorage.getItem('healthList') || '[]');
 let isGuideSubmitting = false;
+let pendingCorrectedGuideList = [];
 const GUIDE_SUBMIT_SNAPSHOT_KEY = 'food-avoidance-guide-submit-snapshot';
 const MODEL_STORAGE_KEY = 'food-avoidance-selected-model';
 const DEFAULT_MODEL = 'gemini-3-flash-preview';
@@ -75,6 +76,78 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+function ensureGuideCorrectionPromptContainer() {
+  if (document.getElementById('guideCorrectionPromptContainer')) {
+    return;
+  }
+
+  const resultBox = document.getElementById('guideApiResult');
+  if (!resultBox) {
+    return;
+  }
+
+  const container = document.createElement('div');
+  container.id = 'guideCorrectionPromptContainer';
+  container.className = 'hidden';
+  resultBox.insertAdjacentElement('afterend', container);
+}
+
+function hideGuideCorrectionPrompt() {
+  const container = document.getElementById('guideCorrectionPromptContainer');
+  if (!container) return;
+
+  container.classList.add('hidden');
+  container.innerHTML = '';
+  pendingCorrectedGuideList = [];
+}
+
+function showGuideCorrectionPrompt(correctedGuideList) {
+  ensureGuideCorrectionPromptContainer();
+
+  const container = document.getElementById('guideCorrectionPromptContainer');
+  if (!container) return;
+
+  pendingCorrectedGuideList = getComparableHealthList(correctedGuideList);
+  if (pendingCorrectedGuideList.length === 0) {
+    hideGuideCorrectionPrompt();
+    return;
+  }
+
+  const submittedGuideList = getComparableHealthList(healthList);
+  const hasDiff = JSON.stringify(submittedGuideList) !== JSON.stringify(pendingCorrectedGuideList);
+  if (!hasDiff) {
+    hideGuideCorrectionPrompt();
+    return;
+  }
+
+  container.classList.remove('hidden');
+  container.innerHTML = `
+    <button
+      id="applyGuideCorrectionBtn"
+      type="button"
+      class="guide-add-button"
+      style="margin-top: 0.75rem; padding: 0.5rem 0.85rem; font-size: 0.85rem;"
+    >
+      입력 보정 적용하기 (보정된 건강 상태 : ${pendingCorrectedGuideList.join(', ')})
+    </button>
+  `;
+
+  const button = document.getElementById('applyGuideCorrectionBtn');
+  if (!button) return;
+
+  button.addEventListener('click', () => {
+    healthList = [...pendingCorrectedGuideList];
+    renderHealthTags();
+    button.textContent = '입력 보정 적용됨';
+    button.disabled = true;
+    saveGuideSubmitSnapshot(getCurrentGuideSubmitPayload());
+
+    window.setTimeout(() => {
+      hideGuideCorrectionPrompt();
+    }, 1000);
+  });
+}
+
 function getSearchUrl(item) {
   return `https://www.google.com/search?q=${encodeURIComponent(`${item} 조심해야 될 성분`)}`;
 }
@@ -133,6 +206,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const input = document.getElementById('healthInput');
   const addButton = document.getElementById('healthAddButton');
   const sendBtn = document.getElementById('guideSendBtn');
+
+  ensureGuideCorrectionPromptContainer();
 
   if (form) {
     form.addEventListener('submit', (event) => {
@@ -253,6 +328,8 @@ async function submitGuideData() {
     return;
   }
 
+  hideGuideCorrectionPrompt();
+
   if (!Array.isArray(healthList) || healthList.length === 0) {
     alert('건강 상태를 최소 1개 이상 입력해주세요.');
     return;
@@ -314,6 +391,19 @@ async function submitGuideData() {
     if (resultBox) {
       const message = data.message || data.answer || JSON.stringify(data);
       resultBox.innerHTML = escapeHtml(String(message)).replace(/\n/g, '<br>');
+    }
+
+    const correctedGuideList = Array.isArray(data.correctedGuideList)
+      ? getComparableHealthList(data.correctedGuideList)
+      : [];
+    const submittedGuideList = getComparableHealthList(healthList);
+    const hasCorrectionDiff = correctedGuideList.length > 0
+      && JSON.stringify(submittedGuideList) !== JSON.stringify(correctedGuideList);
+
+    if (hasCorrectionDiff) {
+      showGuideCorrectionPrompt(correctedGuideList);
+    } else {
+      hideGuideCorrectionPrompt();
     }
 
     const abnormalList = Array.isArray(data.abnormalList)

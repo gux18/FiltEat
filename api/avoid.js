@@ -55,17 +55,18 @@ export default async function handler(req, res) {
 
         const conditions = normalizedGuideValues.join(', ') || '입력된 건강 상태 없음';
 
-        const systemInstruction = '사용자의 건강 상태에 따라 피해야 할 성분(재료)을 추천하라. 한국어로 답변하라.';
-        
-        // JSON 형태의 avoidIngredients 배열과 설명용 answer를 함께 받도록 프롬프트 지정
+        const systemInstruction = '사용자의 건강 상태를 먼저 보정하고 정리한 뒤, 해당 건강 상태에서 피해야 할 성분을 추천하라. 한국어로 답변하라.';
+
+        // JSON 형태의 correctedGuideList, avoidIngredients, answer를 함께 받도록 프롬프트 지정
         const prompt = [
             '사용자 건강 정보:',
             `- 건강 상태: < ${conditions} >`,
             '\n요구사항:',
-            '1. 해당 건강 상태에서 피해야 할 주요 성분명만 짧은 단어로 추출하여 "avoidIngredients" 배열에 넣을 것 (3~7개).',
-            '2. 상세 설명 및 유의사항은 "answer" 항목에 작성할 것.',
-            '\n응답은 반드시 아래 JSON 형식으로만 답변할 것:',
-            '{\n  "avoidIngredients": ["성분1", "성분2", "성분3"],\n  "answer": "상세 조언 텍스트..."\n}'
+            '1. 사용자 입력을 보정한 건강 상태 목록을 "correctedGuideList" 배열에 넣으세요. 비정상적이거나 의미 없는 항목은 제외하고, 결과 항목은 길이 30자 이내의 한글/영문 문자열만 포함하세요.',
+            '2. 해당 건강 상태에서 피해야 할 주요 성분명만 짧은 단어로 추출하여 "avoidIngredients" 배열에 넣으세요 (3~7개).',
+            '3. 상세 설명 및 유의사항은 "answer" 항목에 작성하세요.',
+            '\n응답은 반드시 아래 JSON 형식으로만 답변하세요:',
+            '{\n  "correctedGuideList": ["보정된 건강 상태1", "보정된 건강 상태2"],\n  "avoidIngredients": ["성분1", "성분2", "성분3"],\n  "answer": "상세 조언 텍스트..."\n}'
         ].join('\n');
 
         const response = await ai.models.generateContent({
@@ -82,10 +83,17 @@ export default async function handler(req, res) {
             responseJson = JSON.parse(response.text?.trim() || '{}');
         } catch (e) {
             responseJson = {
+                correctedGuideList: [],
                 avoidIngredients: [],
                 answer: response.text?.trim() || '권장 결과를 생성하지 못했습니다.'
             };
         }
+
+        const correctedGuideList = Array.isArray(responseJson.correctedGuideList)
+            ? responseJson.correctedGuideList
+                .map(item => String(item).trim())
+                .filter(item => item.length > 0 && item.length <= 30)
+            : normalizedGuideValues;
 
         const avoidIngredients = Array.isArray(responseJson.avoidIngredients)
             ? responseJson.avoidIngredients.map(item => String(item).trim()).filter(item => item.length > 0 && item.length <= 30)
@@ -95,8 +103,9 @@ export default async function handler(req, res) {
 
         return res.status(200).json({
             guideList: normalizedGuideValues,
+            correctedGuideList,
             abnormalList,
-            avoidIngredients, // 서버에서 파싱/생성한 기피 추천 성분 목록 변수
+            avoidIngredients,
             message: answer,
             answer
         });

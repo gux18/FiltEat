@@ -1,6 +1,8 @@
 let foodList = JSON.parse(localStorage.getItem('foodList') || '[]');
 let ingredientList = JSON.parse(localStorage.getItem('ingredientList') || '[]');
 let buttonLockTimer = null;
+let pendingCorrectedFoodList = [];
+let pendingCorrectedIngredientList = [];
 const ALTERNATIVE_SUBMIT_SNAPSHOT_KEY = 'food-avoidance-alternative-submit-snapshot';
 const MODEL_STORAGE_KEY = 'food-avoidance-selected-model';
 const DEFAULT_MODEL = 'gemini-3.1-flash-lite';
@@ -69,12 +71,87 @@ function isAlternativePayloadSameAsSnapshot(payload, snapshot) {
 }
 
 function escapeHtml(value) {
-  return value
+  return String(value || '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function ensureAlternativeCorrectionPromptContainer() {
+  if (document.getElementById('alternativeCorrectionPromptContainer')) {
+    return;
+  }
+
+  const resultBox = document.getElementById('apiResult');
+  if (!resultBox) {
+    return;
+  }
+
+  const container = document.createElement('div');
+  container.id = 'alternativeCorrectionPromptContainer';
+  container.className = 'hidden';
+  resultBox.insertAdjacentElement('afterend', container);
+}
+
+function hideAlternativeCorrectionPrompt() {
+  const container = document.getElementById('alternativeCorrectionPromptContainer');
+  if (!container) return;
+
+  container.classList.add('hidden');
+  container.innerHTML = '';
+  pendingCorrectedFoodList = [];
+  pendingCorrectedIngredientList = [];
+}
+
+function showAlternativeCorrectionPrompt(correctedFoodList, correctedIngredientList) {
+  ensureAlternativeCorrectionPromptContainer();
+
+  const container = document.getElementById('alternativeCorrectionPromptContainer');
+  if (!container) return;
+
+  pendingCorrectedFoodList = getComparableList(correctedFoodList);
+  pendingCorrectedIngredientList = getComparableList(correctedIngredientList);
+
+  const submittedFoodList = getComparableList(foodList);
+  const submittedIngredientList = getComparableList(ingredientList);
+  const hasFoodDiff = JSON.stringify(submittedFoodList) !== JSON.stringify(pendingCorrectedFoodList);
+  const hasIngredientDiff = JSON.stringify(submittedIngredientList) !== JSON.stringify(pendingCorrectedIngredientList);
+
+  if (!hasFoodDiff && !hasIngredientDiff) {
+    hideAlternativeCorrectionPrompt();
+    return;
+  }
+
+  container.classList.remove('hidden');
+  container.innerHTML = `
+    <button
+      id="applyAlternativeCorrectionBtn"
+      type="button"
+      class="alternative-add-button"
+      style="margin-top: 0.75rem; padding: 0.4rem 0.8rem; font-size: 0.85rem;"
+    >
+      입력 보정 적용하기 (보정된 식품 : ${pendingCorrectedFoodList.join(', ')} / 보정된 성분 : ${pendingCorrectedIngredientList.join(', ')})
+    </button>
+  `;
+
+  const button = document.getElementById('applyAlternativeCorrectionBtn');
+  if (!button) return;
+
+  button.addEventListener('click', () => {
+    foodList = [...pendingCorrectedFoodList];
+    ingredientList = [...pendingCorrectedIngredientList];
+    renderFoodTags();
+    renderIngredientTags();
+    button.textContent = '입력 보정 적용됨';
+    button.disabled = true;
+    saveAlternativeSubmitSnapshot(getCurrentAlternativeSubmitPayload());
+
+    window.setTimeout(() => {
+      hideAlternativeCorrectionPrompt();
+    }, 1000);
+  });
 }
 
 function isAbnormalTagValue(value) {
@@ -240,6 +317,8 @@ async function submitAlternativeData() {
   const resultBox = document.getElementById('apiResult');
   const sendBtn = document.getElementById('sendBtn');
 
+  hideAlternativeCorrectionPrompt();
+
   if (foodList.length === 0 && ingredientList.length === 0) {
     alert('식품 또는 성분을 최소 1개 이상 입력해주세요.');
     return;
@@ -300,6 +379,23 @@ async function submitAlternativeData() {
       resultBox.innerHTML = escapeHtml(responseText).replace(/\n/g, '<br>');
     }
 
+    const correctedFoodList = Array.isArray(data.correctedFoodList)
+      ? getComparableList(data.correctedFoodList)
+      : [];
+    const correctedIngredientList = Array.isArray(data.correctedIngredientList)
+      ? getComparableList(data.correctedIngredientList)
+      : [];
+    const submittedFoodList = getComparableList(foodList);
+    const submittedIngredientList = getComparableList(ingredientList);
+    const hasCorrectionDiff = (correctedFoodList.length > 0 && JSON.stringify(submittedFoodList) !== JSON.stringify(correctedFoodList))
+      || (correctedIngredientList.length > 0 && JSON.stringify(submittedIngredientList) !== JSON.stringify(correctedIngredientList));
+
+    if (hasCorrectionDiff) {
+      showAlternativeCorrectionPrompt(correctedFoodList, correctedIngredientList);
+    } else {
+      hideAlternativeCorrectionPrompt();
+    }
+
     const abnormalFoodList = Array.isArray(data.abnormalFoodList)
       ? data.abnormalFoodList.map((item) => String(item).trim()).filter(Boolean)
       : [];
@@ -333,6 +429,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const ingredientInput = document.getElementById('ingredientInput');
   const sendBtn = document.getElementById('sendBtn');
 
+  ensureAlternativeCorrectionPromptContainer();
   attachAlternativeModelSelector();
 
   if (sendBtn) {
