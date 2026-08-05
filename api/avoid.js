@@ -62,9 +62,9 @@ export default async function handler(req, res) {
             '사용자 건강 정보:',
             `- 건강 상태: < ${conditions} >`,
             '\n요구사항:',
-            '1. 해당 건강 상태에서 피해야 할 주요 성분명만 짧은 단어로 추출하여 "avoidIngredients" 배열에 넣으세요 (3~7개).',
-            '2. 상세 설명 및 유의사항은 "answer" 항목에 작성하세요.',
-            '\n응답은 반드시 아래 JSON 형식으로만 답변하세요:',
+            '1. 해당 건강 상태에서 피해야 할 주요 성분명만 짧은 단어로 추출하여 "avoidIngredients" 배열에 넣을 것 (3~7개).',
+            '2. 상세 설명 및 유의사항은 "answer" 항목에 작성할 것.',
+            '\n응답은 반드시 아래 JSON 형식으로만 답변할 것:',
             '{\n  "avoidIngredients": ["성분1", "성분2", "성분3"],\n  "answer": "상세 조언 텍스트..."\n}'
         ].join('\n');
 
