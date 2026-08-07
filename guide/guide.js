@@ -421,7 +421,7 @@ async function submitGuideData() {
       resultBox.textContent = '';
     }
 
-    alert('죄송합니다. 잠시 후 다시 시도해 주세요.');
+    alert('죄송합니다. 다른 모델로 시도해 주세요. \n' + error.message);
     console.error(error);
   } finally {
     isGuideSubmitting = false;

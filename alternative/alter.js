@@ -414,7 +414,7 @@ async function submitAlternativeData() {
     setSubmitButtonState(sendBtn, false);
   } catch (error) {
     if (resultBox) {
-      resultBox.textContent = '오류가 발생했습니다. 서버에 문제가 생겼을 수 있으니 잠시 후 다시 시도해주세요.';
+      resultBox.textContent = '오류가 발생했습니다. 다른 모델로 시도해주세요. \n' + error.message;
     }
     console.error(error);
   } finally {

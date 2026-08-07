@@ -337,7 +337,7 @@ async function analyzeImage() {
     saveAnalyzeSubmitSnapshot(getCurrentAnalyzePayload());
     displayResults(data);
   } catch (err) {
-    alert('오류가 발생했습니다. 다른 모델로 시도해보세요.' + err.message);
+    alert('오류가 발생했습니다. 다른 모델로 시도해보세요. \n' + err.message);
   } finally {
     unlockAnalyzeButton(btn);
   }
