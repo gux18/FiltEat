@@ -7,7 +7,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { imageBase64, mimeType, avoidList } = req.body;
+    const { imageBase64, mimeType, avoidList, model } = req.body;
+    const selectedModel = typeof model === 'string' && model.trim()
+      ? model.trim()
+      : 'gemini-3.5-flash-lite';
 
     if (!imageBase64 || !avoidList || avoidList.length === 0) {
       return res.status(400).json({ error: '이미지와 기피물질 목록을 모두 제공해야 합니다.' });
@@ -58,7 +61,7 @@ export default async function handler(req, res) {
 
     // Gemini API 호출 (Structured JSON Output 사용)
   const response = await ai.models.generateContent({
-  model: 'gemini-3.5-flash-lite',
+  model: selectedModel,
   contents: [prompt, imagePart],
   config: {
     responseMimeType: 'application/json',

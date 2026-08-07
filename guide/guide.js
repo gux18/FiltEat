@@ -3,7 +3,7 @@ let isGuideSubmitting = false;
 let pendingCorrectedGuideList = [];
 const GUIDE_SUBMIT_SNAPSHOT_KEY = 'food-avoidance-guide-submit-snapshot';
 const MODEL_STORAGE_KEY = 'food-avoidance-selected-model';
-const DEFAULT_MODEL = 'gemini-3-flash-preview';
+const DEFAULT_MODEL = 'gemini-3.6-flash';
 
 function getSelectedModel() {
   const select = document.getElementById('guideModelSelect');
